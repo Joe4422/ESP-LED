@@ -87,6 +87,7 @@ const token_type_t REGION_DELETE_ANCHOR_TOKEN_TYPES[] =	{ TOKEN_TYPE_STRING };
 esp_err_t get_write_handler(httpd_req_t *req);
 esp_err_t get_region_handler(httpd_req_t *req);
 esp_err_t get_index_handler(httpd_req_t *req);
+esp_err_t get_file_handler(httpd_req_t *req);
 
 bool ReadTokensIntoValues
 (
@@ -125,6 +126,14 @@ httpd_uri_t uri_index_get =
 	.user_ctx = NULL
 };
 
+httpd_uri_t uri_scripts_js_get =
+{
+	.uri = "/scripts.js",
+	.method = HTTP_GET,
+	.handler = get_file_handler,
+	.user_ctx = NULL
+};
+
 /****************************************************************
  * Function definitions
  ****************************************************************/
@@ -142,6 +151,7 @@ httpd_handle_t Webserver_Start()
         httpd_register_uri_handler(server, &uri_write_get);
 		httpd_register_uri_handler(server, &uri_region_get);
 		httpd_register_uri_handler(server, &uri_index_get);
+		httpd_register_uri_handler(server, &uri_scripts_js_get);
     }
     /* If server failed to start, handle will be NULL */
     return server;
@@ -409,7 +419,19 @@ esp_err_t get_region_handler(httpd_req_t *req)
 
 esp_err_t get_index_handler(httpd_req_t *req)
 {
-	/* Send a simple response */
-    httpd_resp_send(req, basicPage, strlen(basicPage));
+    httpd_resp_send(req, WEB_INDEX_HTML, strlen(WEB_INDEX_HTML));
     return ESP_OK;
+}
+
+esp_err_t get_file_handler(httpd_req_t *req)
+{
+	if (strcmp(req->uri, "/scripts.js") == 0)
+	{
+		httpd_resp_send(req, WEB_SCRIPTS_JS, strlen(WEB_SCRIPTS_JS));
+	}
+	else
+	{
+		httpd_resp_send(req, RESPONSE_STATIC_FAILURE, strlen(RESPONSE_STATIC_FAILURE));
+	}
+	return ESP_OK;
 }

@@ -4,6 +4,8 @@
 /****************************************************************
  * Defines, consts
  ****************************************************************/
-extern const char* basicPage;
+extern const char* WEB_INDEX_HTML;
 
-#endif /* MAIN_WEB_DATA_H_ */
+extern const char* WEB_SCRIPTS_JS;
+
+#endif /* WEB_DATA_H_ */
