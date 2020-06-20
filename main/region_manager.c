@@ -50,7 +50,8 @@ bool Region_Init()
 
 bool Region_Create
 (
-	const region_t	regionData
+	const region_t	regionData,
+	uint8_t *		out_index
 )
 {
 	uint8_t regionSlot;
@@ -82,6 +83,8 @@ bool Region_Create
 
 		// Write change to storage
 		Storage_WriteRegions(regions);
+
+		*out_index = regionSlot;
 
 		return true;
 	}

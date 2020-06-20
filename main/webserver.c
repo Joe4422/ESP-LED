@@ -73,6 +73,12 @@ const token_type_t WRITE_ONE_TOKEN_TYPES[] =			{ TOKEN_TYPE_INDEX, TOKEN_TYPE_CO
 
 const token_type_t REGION_CREATE_TOKEN_TYPES[] =		{ TOKEN_TYPE_INDEX, TOKEN_TYPE_INDEX, TOKEN_TYPE_UINT8, TOKEN_TYPE_COLOUR };
 #define REGION_CREATE_TOKEN_COUNT						(6)
+const token_type_t REGION_UPDATE_TOKEN_TYPES[] =		{ TOKEN_TYPE_UINT8, TOKEN_TYPE_INDEX, TOKEN_TYPE_INDEX, TOKEN_TYPE_UINT8, TOKEN_TYPE_COLOUR };
+#define REGION_UPDATE_TOKEN_COUNT						(7)
+const token_type_t REGION_DELETE_TOKEN_TYPES[] =		{ TOKEN_TYPE_UINT8 };
+#define REGION_DELETE_TOKEN_COUNT						(1)
+const token_type_t REGION_GET_TOKEN_TYPES[] =			{ TOKEN_TYPE_UINT8 };
+#define REGION_GET_TOKEN_COUNT							(1)
 const token_type_t REGION_ADD_ANCHOR_TOKEN_TYPES[] =	{ TOKEN_TYPE_STRING, TOKEN_TYPE_UINT16 };
 #define REGION_ADD_ANCHOR_TOKEN_COUNT					(2)
 const token_type_t REGION_DELETE_ANCHOR_TOKEN_TYPES[] =	{ TOKEN_TYPE_STRING };
@@ -130,15 +136,15 @@ httpd_uri_t uri_index_get =
  ****************************************************************/
 httpd_handle_t Webserver_Start()
 {
-	/* Generate default configuration */
+	// Generate default configuration
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
 
-    /* Empty handle to esp_http_server */
+    // Empty handle to esp_http_server
     httpd_handle_t server = NULL;
 
-    /* Start the httpd server */
+    // Start the httpd server
     if (httpd_start(&server, &config) == ESP_OK) {
-        /* Register URI handlers */
+        // Register URI handlers
         httpd_register_uri_handler(server, &uri_write_get);
 		httpd_register_uri_handler(server, &uri_region_get);
 		httpd_register_uri_handler(server, &uri_index_get);
@@ -152,8 +158,9 @@ httpd_handle_t Webserver_Start()
 
 void Webserver_Stop(const httpd_handle_t server)
 {
-	if (server) {
-        /* Stop the httpd server */
+	if (server)
+	{
+		// Stop the server
         httpd_stop(server);
     }
 }
@@ -330,27 +337,63 @@ esp_err_t get_write_handler(httpd_req_t *req)
 
 esp_err_t get_region_handler(httpd_req_t *req)
 {
-	char** response = &RESPONSE_STATIC_FAILURE;
+	char response_buffer[STRING_BUFFER_SIZE];
+	strcpy(response_buffer, RESPONSE_STATIC_FAILURE);
 
 	ESP_LOGI(WEB_LOG_TAG_WRITE, "Request at %s.", req->uri);
 
 	if (CheckUriParameter(req->uri, BASE_REGION_URI, "create"))
 	{
-		uint16_t startIndex;
-		uint16_t endIndex;
-		uint8_t shaderIndex;
-		colour_t colour;
+		region_t region;
 
-		if (ReadTokensIntoValues(req->uri, REGION_CREATE_TOKEN_TYPES, REGION_CREATE_TOKEN_COUNT, &startIndex, &endIndex, &shaderIndex, &colour))
+		if (ReadTokensIntoValues(req->uri, REGION_CREATE_TOKEN_TYPES, REGION_CREATE_TOKEN_COUNT, &region.start, &region.end, &region.shaderIndex, &region.colour))
 		{
-			if (shaderIndex < NUM_SHADERS)
+			if (region.shaderIndex < NUM_SHADERS)
 			{
-				if (Region_Create((region_t){ startIndex, endIndex, shaderIndex, colour }))
-				{
-					response = &RESPONSE_STATIC_SUCCESS;
+				uint8_t index;
 
-					ESP_LOGI(WEB_LOG_TAG_REGION, "Created region from %d to %d with shader %s.", startIndex, endIndex, SHADERS[shaderIndex]->name);
+				if (Region_Create(region, &index))
+				{
+					sprintf(response_buffer, "region created %d", index);
+
+					ESP_LOGI(WEB_LOG_TAG_REGION, "Created region from %d to %d with shader %s.", region.start, region.end, SHADERS[region.shaderIndex]->name);
 				}
+			}
+		}
+	}
+	else if (CheckUriParameter(req->uri, BASE_REGION_URI, "update"))
+	{
+		uint8_t regionIndex;
+		region_t region;
+
+		if (ReadTokensIntoValues(req->uri, REGION_UPDATE_TOKEN_TYPES, REGION_UPDATE_TOKEN_COUNT, &regionIndex, &region.start, &region.end, &region.shaderIndex, &region.colour))
+		{
+			if (region.shaderIndex < NUM_SHADERS)
+			{
+				if (Region_Update(regionIndex, region))
+				{
+					strcpy(response_buffer, RESPONSE_STATIC_SUCCESS);
+
+					ESP_LOGI(WEB_LOG_TAG_REGION, "Updated region at index %d to from %d to %d with shader %s.", regionIndex, region.start, region.end, SHADERS[region.shaderIndex]->name);
+
+					Strip_Buffer_SetAll(COLOUR_OFF);
+				}
+			}
+		}
+	}
+	else if (CheckUriParameter(req->uri, BASE_REGION_URI, "delete"))
+	{
+		uint8_t regionIndex;
+
+		if (ReadTokensIntoValues(req->uri, REGION_DELETE_TOKEN_TYPES, REGION_DELETE_TOKEN_COUNT, &regionIndex))
+		{
+			if (Region_Delete(regionIndex))
+			{
+				strcpy(response_buffer, RESPONSE_STATIC_SUCCESS);
+
+				ESP_LOGI(WEB_LOG_TAG_REGION, "Deleted region at index %d.", regionIndex);
+
+				Strip_Buffer_SetAll(COLOUR_OFF);
 			}
 		}
 	}
@@ -358,7 +401,32 @@ esp_err_t get_region_handler(httpd_req_t *req)
 	{
 		ESP_LOGI(WEB_LOG_TAG_REGION, "Deleted all regions.");
 		Region_DeleteAll();
-		response = &RESPONSE_STATIC_SUCCESS;
+		strcpy(response_buffer, RESPONSE_STATIC_SUCCESS);
+	}
+	else if (CheckUriParameter(req->uri, BASE_REGION_URI, "get_max"))
+	{
+		ESP_LOGI(WEB_LOG_TAG_REGION, "Request for max regions (%d)", REGION_COUNT);
+		sprintf(response_buffer, "region max %d", REGION_COUNT);
+	}
+	else if (CheckUriParameter(req->uri, BASE_REGION_URI, "get"))
+	{
+		ESP_LOGI(WEB_LOG_TAG_REGION, "Request for region.");
+
+		uint8_t regionIndex;
+
+		if (ReadTokensIntoValues(req->uri, REGION_GET_TOKEN_TYPES, REGION_GET_TOKEN_COUNT, &regionIndex))
+		{
+			const region_t * region = Region_GetData(regionIndex);
+
+			if (region == NULL)
+			{
+				sprintf(response_buffer, "region data null");
+			}
+			else
+			{
+				sprintf(response_buffer, "region data %d %d %d %d %d %d %d", regionIndex, region->start, region->end, region->shaderIndex, region->colour.red, region->colour.blue, region->colour.green);
+			}
+		}
 	}
 	else if (CheckUriParameter(req->uri, BASE_REGION_URI, "anchor_add"))
 	{
@@ -367,7 +435,7 @@ esp_err_t get_region_handler(httpd_req_t *req)
 		if (ReadTokensIntoValues(req->uri, REGION_ADD_ANCHOR_TOKEN_TYPES, REGION_ADD_ANCHOR_TOKEN_COUNT, anchor.name, &(anchor.index)))
 		{
 			ESP_LOGI(WEB_LOG_TAG_REGION, "Created anchor %s at %d.", anchor.name, anchor.index);
-			response = &RESPONSE_STATIC_SUCCESS;
+			strcpy(response_buffer, RESPONSE_STATIC_SUCCESS);
 
 			Region_AddAnchor(anchor);
 		}
@@ -381,7 +449,7 @@ esp_err_t get_region_handler(httpd_req_t *req)
 			if (Region_DeleteAnchor(anchor_name))
 			{
 				ESP_LOGI(WEB_LOG_TAG_REGION, "Deleted anchor %s.", anchor_name);
-				response = &RESPONSE_STATIC_SUCCESS;
+				strcpy(response_buffer, RESPONSE_STATIC_SUCCESS);
 			}
 		}
 	}
@@ -389,12 +457,12 @@ esp_err_t get_region_handler(httpd_req_t *req)
 	{
 		ESP_LOGI(WEB_LOG_TAG_REGION, "Deleted all anchors.");
 		Region_DeleteAllAnchors();
-		response = &RESPONSE_STATIC_SUCCESS;
+		strcpy(response_buffer, RESPONSE_STATIC_SUCCESS);
 	}
 
 	// Send response
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-    httpd_resp_send(req, *response, strlen(*response));
+    httpd_resp_send(req, response_buffer, strlen(response_buffer));
     return ESP_OK;
 }
 

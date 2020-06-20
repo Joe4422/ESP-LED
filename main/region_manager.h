@@ -44,7 +44,8 @@ bool Region_Init();
 
 bool Region_Create
 (
-	const region_t	regionData
+	const region_t	regionData,
+	uint8_t *		out_index
 );
 
 bool Region_Delete
