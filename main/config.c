@@ -8,7 +8,7 @@
  ****************************************************************/
 const config_t CONFIG_DEFAULT =
 {
-	.regions_enabled = false
+	.strip_on = true
 };
 
 config_t global_config = CONFIG_DEFAULT;

@@ -3,16 +3,12 @@
 </head>
 <body>
 	<div id="tab_control">
-		<button onclick="TabControls_Button_Regions_OnClick()">Regions</button>
-		<button onclick="TabControls_Button_Anchors_OnClick()">Anchors</button>
-	</div>
-	<div>
-		<input type="range" min="0" max="255" value="128" id="red" style="background:#FF0000;">
-		<input type="range" min="0" max="255" value="128" id="green" style="background:#00FF00;">
-		<input type="range" min="0" max="255" value="128" id="blue" style="background:#0000FF;">
+		<button id="tab_control_regions" onclick="TabControls_Button_Regions_OnClick()" disabled="true">Regions</button>
+		<button id="tab_control_anchors" onclick="TabControls_Button_Anchors_OnClick()">Anchors</button>
 	</div>
 	<div id="tab_regions">
 		Regions
+		<button onclick="Regions_AddRegion_OnClick()">Add Region</button>
 	</div>
 	<div id="tab_anchors" style="display:none;">
 		Anchors
