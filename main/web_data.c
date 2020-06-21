@@ -6,62 +6,107 @@
 /****************************************************************
  * Defines, consts
  ****************************************************************/
-const char* WEB_INDEX_HTML = "<head> \n \
-	<script src=\"scripts.js\"></script> \n \
-	<script src=\"RegionController.js\"></script> \n \
-</head> \n \
-<body> \n \
-	<div id=\"tab_control\"> \n \
-		<button id=\"tab_control_regions\" onclick=\"TabControls_Button_Regions_OnClick()\" disabled=\"true\">Regions</button> \n \
-		<button id=\"tab_control_anchors\" onclick=\"TabControls_Button_Anchors_OnClick()\">Anchors</button> \n \
-	</div> \n \
-	<div id=\"tab_regions\"> \n \
-		Regions \n \
-		<button onclick=\"Regions_AddRegion_OnClick()\">Add Region</button> \n \
-	</div> \n \
-	<div id=\"tab_anchors\" style=\"display:none;\"> \n \
-		Anchors \n \
-	</div> \n \
-	<script>Page_OnLoad();</script> \n \
-</body> \n";
+const char* WEB_INDEX_HTML = "<!DOCTYPE html> \n \
+<html> \n \
+	<head> \n \
+		<meta charset=\"UTF-8\"> \n \
+		<title>ESP-IDF</title> \n \
+		<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no\"> \n \
+		<script src=\"scripts.js\"></script> \n \
+		<script src=\"RegionController.js\"></script> \n \
+		 \n \
+		<link rel=\"stylesheet\" href=\"style.css\" type=\"text/css\"> \n \
+	</head> \n \
+	<body> \n \
+		<div class=\"tab bar\"> \n \
+			<button class=\"tab button\" id=\"tab_button_controls\" onclick=\"TabControls_Button_OnClick(this, 'tab_controls')\">Controls</button> \n \
+			<button class=\"tab button\" id=\"tab_button_regions\" onclick=\"TabControls_Button_OnClick(this, 'tab_regions')\">Regions</button> \n \
+			<button class=\"tab button\" id=\"tab_button_anchors\" onclick=\"TabControls_Button_OnClick(this, 'tab_anchors')\">Anchors</button> \n \
+		</div> \n \
+		<div class=\"tab container\"> \n \
+			<div class=\"tab content\" id=\"tab_controls\"> \n \
+				<button id=\"controls_button_toggle_power\" class=\"tab content_button\" onclick=\"Controls_Toggle_Power_OnClick()\">Toggle Power</button> \n \
+			</div> \n \
+			<div class=\"tab content\" id=\"tab_regions\"> \n \
+				<button id=\"regions_button_refresh\" class=\"tab content_button\" onclick=\"Regions_Refresh_OnClick()\">Refresh</button> \n \
+				<button id=\"regions_button_add\" class=\"tab content_button\" onclick=\"Regions_Add_OnClick()\">Add</button> \n \
+				<button id=\"regions_button_clear\" class=\"tab content_button\" onclick=\"Regions_Clear_OnClick()\">Clear</button> \n \
+			</div> \n \
+			<div class=\"tab content\" id=\"tab_anchors\"> \n \
+			 \n \
+			</div> \n \
+		</div> \n \
+		<script>Page_OnLoad();</script> \n \
+	</body> \n \
+</html> \n";
 
 const char* WEB_REGIONCONTROLLER_JS = "class RegionController \n \
 { \n \
 	constructor(regionIndex, startIndex, endIndex, shader, red, green, blue) \n \
 	{ \n \
-		this.regionIndex = regionIndex; \n \
+		this.region = regionIndex; \n \
 		 \n \
 		this.div = document.createElement(\"div\"); \n \
-		this.div.style = \"border:1px solid black;\"; \n \
+		this.div.setAttribute(\"class\", \"region\"); \n \
+		this.div.regionController = this; \n \
+		 \n \
+		var table = document.createElement(\"table\"); \n \
+		table.setAttribute(\"class\", \"region table\"); \n \
+	 \n \
+		// button_Delete \n \
+		this.button_Delete = document.createElement(\"button\"); \n \
+		this.button_Delete.innerHTML = \"X\"; \n \
+		this.button_Delete.onclick = this.Delete; \n \
+		this.button_Delete.setAttribute(\"class\", \"region delete_button\"); \n \
+ \n \
+		// header \n \
+		var tr_header = document.createElement(\"tr\"); \n \
+		tr_header.setAttribute(\"class\", \"region header\"); \n \
+		this.td_label_header = document.createElement(\"td\"); \n \
+		this.td_label_header.innerHTML = \"Region \" + regionIndex; \n \
+		this.td_label_header.style=\"font-weight:bold; padding-top: 5px;\"; \n \
+		var td_header_delete_button = document.createElement(\"td\"); \n \
+		td_header_delete_button.style = \"text-align:right;\"; \n \
+		td_header_delete_button.appendChild(this.button_Delete); \n \
+		tr_header.appendChild(this.td_label_header); \n \
+		tr_header.appendChild(td_header_delete_button); \n \
+		table.appendChild(tr_header); \n \
 	 \n \
 		// textBox_Start \n \
-		var div_textBox_Start = document.createElement(\"div\"); \n \
-		var label_textBox_Start = document.createElement(\"label\"); \n \
-		label_textBox_Start.innerHTML = \"Start Index:\"; \n \
+		var tr_textBox_Start = document.createElement(\"tr\"); \n \
+		var td_label_textBox_Start = document.createElement(\"td\"); \n \
+		td_label_textBox_Start.innerHTML = \"Start Index\"; \n \
+		var td_textBox_Start = document.createElement(\"td\"); \n \
 		this.textBox_Start = document.createElement(\"input\"); \n \
 		this.textBox_Start.setAttribute(\"type\", \"text\"); \n \
 		this.textBox_Start.placeholder = \"0\"; \n \
 		this.textBox_Start.value = startIndex; \n \
-		this.textBox_Start.setAttribute(\"onchange\", \"Regions_RegionController_Form_OnChange(\" + regionControllers.length + \");\"); \n \
-		div_textBox_Start.appendChild(label_textBox_Start); \n \
-		div_textBox_Start.appendChild(this.textBox_Start); \n \
+		this.textBox_Start.onchange = this.Update; \n \
+		td_textBox_Start.appendChild(this.textBox_Start); \n \
+		tr_textBox_Start.appendChild(td_label_textBox_Start); \n \
+		tr_textBox_Start.appendChild(td_textBox_Start); \n \
+		table.appendChild(tr_textBox_Start); \n \
 		 \n \
 		// textBox_End \n \
-		var div_textBox_End = document.createElement(\"div\"); \n \
-		var label_textBox_End = document.createElement(\"label\"); \n \
-		label_textBox_End.innerHTML = \"End Index:\"; \n \
+		var tr_textBox_End = document.createElement(\"tr\"); \n \
+		var td_label_textBox_End = document.createElement(\"td\"); \n \
+		td_label_textBox_End.innerHTML = \"End Index\"; \n \
+		var td_textBox_End = document.createElement(\"td\"); \n \
 		this.textBox_End = document.createElement(\"input\"); \n \
 		this.textBox_End.setAttribute(\"type\", \"text\"); \n \
 		this.textBox_End.placeholder = \"149\"; \n \
 		this.textBox_End.value = endIndex; \n \
-		this.textBox_End.setAttribute(\"onchange\", \"Regions_RegionController_Form_OnChange(\" + regionControllers.length + \");\"); \n \
-		div_textBox_End.appendChild(label_textBox_End); \n \
-		div_textBox_End.appendChild(this.textBox_End); \n \
+		this.textBox_End.onchange = this.Update; \n \
+		td_textBox_End.appendChild(this.textBox_End); \n \
+		tr_textBox_End.appendChild(td_label_textBox_End); \n \
+		tr_textBox_End.appendChild(td_textBox_End); \n \
+		table.appendChild(tr_textBox_End); \n \
 		 \n \
 		// dropdown_Shader \n \
-		var div_dropdown_Shader = document.createElement(\"div\"); \n \
-		var label_dropdown_Shader = document.createElement(\"label\"); \n \
-		label_dropdown_Shader.innerHTML = \"Shader:\"; \n \
+		var tr_dropdown_Shader = document.createElement(\"tr\"); \n \
+		var td_label_dropdown_Shader = document.createElement(\"td\"); \n \
+		td_label_dropdown_Shader.innerHTML = \"Shader\"; \n \
+		var td_dropdown_Shader = document.createElement(\"td\"); \n \
 		this.dropdown_Shader = document.createElement(\"select\"); \n \
 		for (i = 0; i < max_shaders; i++) \n \
 		{ \n \
@@ -70,62 +115,75 @@ const char* WEB_REGIONCONTROLLER_JS = "class RegionController \n \
 			this.dropdown_Shader.appendChild(shader_option); \n \
 		}		 \n \
 		this.dropdown_Shader.selectedIndex = shader; \n \
-		this.dropdown_Shader.setAttribute(\"onchange\", \"Regions_RegionController_Form_OnChange(\" + regionControllers.length + \");\"); \n \
-		div_dropdown_Shader.appendChild(label_dropdown_Shader); \n \
-		div_dropdown_Shader.appendChild(this.dropdown_Shader); \n \
+		this.dropdown_Shader.onchange = this.Update; \n \
+		td_dropdown_Shader.appendChild(this.dropdown_Shader); \n \
+		tr_dropdown_Shader.appendChild(td_label_dropdown_Shader); \n \
+		tr_dropdown_Shader.appendChild(td_dropdown_Shader); \n \
+		table.appendChild(tr_dropdown_Shader); \n \
 		 \n \
 		// slider_Red \n \
-		var div_slider_Red = document.createElement(\"div\"); \n \
-		var label_slider_Red = document.createElement(\"label\"); \n \
-		label_slider_Red.innerHTML = \"Red:\"; \n \
+		var tr_slider_Red = document.createElement(\"tr\"); \n \
+		var td_label_slider_Red = document.createElement(\"td\"); \n \
+		td_label_slider_Red.innerHTML = \"Red\"; \n \
+		var td_slider_Red = document.createElement(\"td\"); \n \
 		this.slider_Red = document.createElement(\"input\"); \n \
 		this.slider_Red.setAttribute(\"type\", \"range\"); \n \
 		this.slider_Red.min = 0; \n \
 		this.slider_Red.max = 255; \n \
 		this.slider_Red.value = red; \n \
 		this.slider_Red.onchange = this.Update; \n \
-		this.slider_Red.setAttribute(\"onchange\", \"Regions_RegionController_Form_OnChange(\" + regionControllers.length + \");\"); \n \
-		div_slider_Red.appendChild(label_slider_Red); \n \
-		div_slider_Red.appendChild(this.slider_Red); \n \
+		this.slider_Red.setAttribute(\"class\", \"region slider red\"); \n \
+		td_slider_Red.appendChild(this.slider_Red); \n \
+		tr_slider_Red.appendChild(td_label_slider_Red); \n \
+		tr_slider_Red.appendChild(td_slider_Red); \n \
+		table.appendChild(tr_slider_Red); \n \
 		 \n \
 		// slider_Green \n \
-		var div_slider_Green = document.createElement(\"div\"); \n \
-		var label_slider_Green = document.createElement(\"label\"); \n \
-		label_slider_Green.innerHTML = \"Green:\"; \n \
+		var tr_slider_Green = document.createElement(\"tr\"); \n \
+		var td_label_slider_Green = document.createElement(\"td\"); \n \
+		td_label_slider_Green.innerHTML = \"Green\"; \n \
+		var td_slider_Green = document.createElement(\"td\");		 \n \
 		this.slider_Green = document.createElement(\"input\"); \n \
 		this.slider_Green.setAttribute(\"type\", \"range\"); \n \
 		this.slider_Green.min = 0; \n \
 		this.slider_Green.max = 255; \n \
 		this.slider_Green.value = green; \n \
-		this.slider_Green.setAttribute(\"onchange\", \"Regions_RegionController_Form_OnChange(\" + regionControllers.length + \");\"); \n \
-		div_slider_Green.appendChild(label_slider_Green); \n \
-		div_slider_Green.appendChild(this.slider_Green); \n \
+		this.slider_Green.onchange = this.Update; \n \
+		this.slider_Green.setAttribute(\"class\", \"region slider green\"); \n \
+		td_slider_Green.appendChild(this.slider_Green); \n \
+		tr_slider_Green.appendChild(td_label_slider_Green); \n \
+		tr_slider_Green.appendChild(td_slider_Green); \n \
+		table.appendChild(tr_slider_Green); \n \
 		 \n \
 		// slider_Blue \n \
-		var div_slider_Blue = document.createElement(\"div\"); \n \
-		var label_slider_Blue = document.createElement(\"label\"); \n \
-		label_slider_Blue.innerHTML = \"Blue:\"; \n \
+		var tr_slider_Blue = document.createElement(\"tr\"); \n \
+		var td_label_slider_Blue = document.createElement(\"td\"); \n \
+		td_label_slider_Blue.innerHTML = \"Blue\"; \n \
+		var td_slider_Blue = document.createElement(\"td\");			 \n \
 		this.slider_Blue = document.createElement(\"input\"); \n \
 		this.slider_Blue.setAttribute(\"type\", \"range\"); \n \
 		this.slider_Blue.min = 0; \n \
 		this.slider_Blue.max = 255; \n \
 		this.slider_Blue.value = blue; \n \
-		this.slider_Blue.setAttribute(\"onchange\", \"Regions_RegionController_Form_OnChange(\" + regionControllers.length + \");\"); \n \
-		div_slider_Blue.appendChild(label_slider_Blue); \n \
-		div_slider_Blue.appendChild(this.slider_Blue); \n \
-		 \n \
-		// button_Delete \n \
-		this.button_Delete = document.createElement(\"button\"); \n \
-		this.button_Delete.innerHTML = \"Delete\"; \n \
-		this.button_Delete.setAttribute(\"onclick\", \"Regions_RegionController_Delete_OnClick(\" + regionControllers.length + \");\"); \n \
-		 \n \
-		this.div.appendChild(div_textBox_Start); \n \
-		this.div.appendChild(div_textBox_End); \n \
-		this.div.appendChild(div_dropdown_Shader); \n \
-		this.div.appendChild(div_slider_Red); \n \
-		this.div.appendChild(div_slider_Green); \n \
-		this.div.appendChild(div_slider_Blue); \n \
-		this.div.appendChild(this.button_Delete); \n \
+		this.slider_Blue.onchange = this.Update; \n \
+		this.slider_Blue.setAttribute(\"class\", \"region slider blue\");		 \n \
+		td_slider_Blue.appendChild(this.slider_Blue); \n \
+		tr_slider_Blue.appendChild(td_label_slider_Blue); \n \
+		tr_slider_Blue.appendChild(td_slider_Blue); \n \
+		table.appendChild(tr_slider_Blue); \n \
+				 \n \
+		this.div.appendChild(table); \n \
+	} \n \
+	 \n \
+	get regionIndex() \n \
+	{ \n \
+		return this.region; \n \
+	} \n \
+	 \n \
+	set regionIndex(value) \n \
+	{ \n \
+		this.region = value; \n \
+		this.td_label_header.innerHTML = \"Region \" + value; \n \
 	} \n \
 	 \n \
 	get startIndex() \n \
@@ -189,23 +247,25 @@ const char* WEB_REGIONCONTROLLER_JS = "class RegionController \n \
 	 \n \
 	Update() \n \
 	{ \n \
-		Http_MakeRequest(\"/region?update-\" + this.regionIndex + \"-\" + this.startIndex + \"-\" + this.endIndex + \"-\" + this.shader + \"-\" + this.red + \"-\" + this.green + \"-\" + this.blue); \n \
+		var rc = this.parentNode.parentNode.parentNode.parentNode.regionController; \n \
+		Http_MakeRequest(\"/region?update-\" + rc.regionIndex + \"-\" + rc.startIndex + \"-\" + rc.endIndex + \"-\" + rc.shader + \"-\" + rc.red + \"-\" + rc.green + \"-\" + rc.blue); \n \
 	} \n \
 	 \n \
 	Delete() \n \
 	{ \n \
-		Http_MakeRequest(\"/region?delete-\" + this.regionIndex); \n \
+		var rc = this.parentNode.parentNode.parentNode.parentNode.regionController; \n \
+		Http_MakeRequest(\"/region?delete-\" + rc.regionIndex); \n \
+		 \n \
+		tab_regions.removeChild(rc.div); \n \
+ \n \
+		regionControllers.splice(regionControllers.indexOf(rc), 1); \n \
 	} \n \
 	 \n \
-	SetIndex(index) \n \
-	{ \n \
-		this.textBox_Start.setAttribute(\"onclick\", \"Regions_RegionController_Delete_OnClick(\" + index + \");\"); \n \
-		this.textBox_End.setAttribute(\"onclick\", \"Regions_RegionController_Delete_OnClick(\" + index + \");\"); \n \
-		this.dropdown_Shader.setAttribute(\"onclick\", \"Regions_RegionController_Delete_OnClick(\" + index + \");\"); \n \
-		this.slider_Red.setAttribute(\"onclick\", \"Regions_RegionController_Delete_OnClick(\" + index + \");\"); \n \
-		this.slider_Green.setAttribute(\"onclick\", \"Regions_RegionController_Delete_OnClick(\" + index + \");\"); \n \
-		this.slider_Blue.setAttribute(\"onclick\", \"Regions_RegionController_Delete_OnClick(\" + index + \");\"); \n \
-		this.button_Delete.setAttribute(\"onclick\", \"Regions_RegionController_Delete_OnClick(\" + index + \");\"); \n \
+	Remove() \n \
+	{		 \n \
+		tab_regions.removeChild(this.div); \n \
+ \n \
+		regionControllers.splice(regionControllers.indexOf(this), 1); \n \
 	} \n \
 } \n";
 
@@ -222,6 +282,8 @@ var shaderNames = []; \n \
 var max_regions = 0; \n \
 var max_shaders = 0; \n \
  \n \
+var region_load_progress = 0; \n \
+ \n \
 function Page_OnLoad() \n \
 { \n \
 	tab_control_regions = document.getElementById(\"tab_control_regions\"); \n \
@@ -232,6 +294,8 @@ function Page_OnLoad() \n \
 	 \n \
 	Http_MakeRequest(\"/shader?get_shaders\"); \n \
 	Http_MakeRequest(\"/region?get_max\"); \n \
+	 \n \
+	document.getElementById(\"tab_button_controls\").click(); \n \
 } \n \
  \n \
 /**************************************************************** \n \
@@ -243,6 +307,7 @@ function Http_Response_Region(response) \n \
 	{ \n \
 		case \"get_max\": \n \
 			max_regions = response[2]; \n \
+			region_load_progress = 0; \n \
 			 \n \
 			for (i = 0; i < max_regions; i++) \n \
 			{ \n \
@@ -250,6 +315,16 @@ function Http_Response_Region(response) \n \
 			} \n \
 			break; \n \
 		case \"get\": \n \
+			region_load_progress++; \n \
+			if (region_load_progress == max_regions) \n \
+			{ \n \
+				document.getElementById(\"regions_button_refresh\").style = \"\"; \n \
+			} \n \
+			else \n \
+			{ \n \
+				var prog = (region_load_progress / max_regions) * 100; \n \
+				document.getElementById(\"regions_button_refresh\").style = \"background: linear-gradient(90deg, rgb(90,130,150) \" + prog + \"%, rgb(80,80,80) \" + prog + \"%);\"; \n \
+			} \n \
 			if (response[2] != \"null\") \n \
 			{ \n \
 				var rc = new RegionController(response[2], response[3], response[4], response[5], response[6], response[7], response[8]); \n \
@@ -266,6 +341,8 @@ function Http_Response_Region(response) \n \
 					console.log(\"Updated region index of region controller \" + i + \" to \" + response[2]);  \n \
 					regionControllers[i].regionIndex = response[2]; \n \
 					regionControllers[i].div.id = \"region-\" + response[2]; \n \
+					tab_regions.appendChild(regionControllers[i].div); \n \
+					document.getElementById(\"regions_button_add\").disabled = false; \n \
 				} \n \
 			} \n \
 		default: \n \
@@ -322,51 +399,37 @@ function Http_MakeRequest(request) \n \
 /**************************************************************** \n \
  * Tab controls \n \
  ****************************************************************/ \n \
-function TabControls_Button_Regions_OnClick() \n \
+function TabControls_Button_OnClick(sender, name) \n \
 { \n \
-	tab_regions.style.display = \"block\"; \n \
-	tab_control_regions.disabled = true; \n \
+	var tab_contents = document.getElementsByClassName(\"tab content\"); \n \
+	for (i = 0; i < tab_contents.length; i++) \n \
+	{ \n \
+		tab_contents[i].style.display = \"none\"; \n \
+	} \n \
+	document.getElementById(name).style.display = \"block\"; \n \
 	 \n \
-	tab_anchors.style.display = \"none\"; \n \
-	tab_control_anchors.disabled = false; \n \
+	var tab_buttons = document.getElementsByClassName(\"tab button\"); \n \
+	for (i = 0; i < tab_buttons.length; i++) \n \
+	{ \n \
+		tab_buttons[i].disabled = false; \n \
+		tab_buttons[i].classList.remove(\"active\"); \n \
+	} \n \
+	sender.disabled = true; \n \
+	sender.classList.add(\"active\"); \n \
 } \n \
  \n \
-function TabControls_Button_Anchors_OnClick() \n \
+/**************************************************************** \n \
+ * Controls \n \
+ ****************************************************************/ \n \
+function Controls_Toggle_Power_OnClick() \n \
 { \n \
-	tab_anchors.style.display = \"block\"; \n \
-	tab_control_anchors.disabled = true; \n \
-	 \n \
-	tab_regions.style.display = \"none\"; \n \
-	tab_control_regions.disabled = false; \n \
+	Http_MakeRequest(\"config?toggle_power\"); \n \
 } \n \
  \n \
 /**************************************************************** \n \
  * Regions \n \
  ****************************************************************/ \n \
-function Regions_RegionController_Form_OnChange(index) \n \
-{ \n \
-	var rc = regionControllers[index]; \n \
-	 \n \
-	rc.Update(); \n \
-} \n \
- \n \
-function Regions_RegionController_Delete_OnClick(index) \n \
-{ \n \
-	var rc = regionControllers[index]; \n \
-	 \n \
-	rc.Delete(); \n \
-	 \n \
-	tab_regions.removeChild(rc.div); \n \
-	 \n \
-	regionControllers.splice(index, 1); \n \
-	 \n \
-	for (i = index; i < regionControllers.length; i++) \n \
-	{ \n \
-		regionControllers[i].SetIndex(i); \n \
-	} \n \
-} \n \
-  \n \
-function Regions_AddRegion_OnClick() \n \
+function Regions_Add_OnClick() \n \
 { \n \
 	if (regionControllers.length < max_regions) \n \
 	{ \n \
@@ -376,8 +439,129 @@ function Regions_AddRegion_OnClick() \n \
 		 \n \
 		regionControllers.push(rc); \n \
 		 \n \
-		tab_regions.appendChild(rc.div); \n \
+		document.getElementById(\"regions_button_add\").disabled = true; \n \
 	} \n \
+} \n \
+ \n \
+function Regions_Refresh_OnClick() \n \
+{ \n \
+	var len = regionControllers.length; \n \
+	for (i = 0; i < len; i++) \n \
+	{ \n \
+		regionControllers[0].Remove(); \n \
+	} \n \
+	 \n \
+	Http_MakeRequest(\"/region?get_max\"); \n \
+} \n \
+ \n \
+function Regions_Clear_OnClick() \n \
+{ \n \
+	var len = regionControllers.length; \n \
+	for (i = 0; i < len; i++) \n \
+	{ \n \
+		regionControllers[0].Remove(); \n \
+	} \n \
+	 \n \
+	Http_MakeRequest(\"/region?clear\"); \n \
+} \n";
+
+const char* WEB_STYLE_CSS = "body { \n \
+	background-color: rgb(45,45,45); \n \
+	font-family: sans-serif; \n \
+	color: rgb(255,255,255); \n \
+	margin: 0px; \n \
+} \n \
+ \n \
+input[type=\"text\"] { \n \
+	background-color: rgb(32,33,36); \n \
+	border: none; \n \
+	color: rgb(255,255,255); \n \
+	border-radius: 100px; \n \
+	padding: 3px; \n \
+	padding-left: 5px; \n \
+	width: 97%; \n \
+	height:17.5px; \n \
+} \n \
+ \n \
+select { \n \
+	background: rgb(32,33,36); \n \
+	color: rgb(255,255,255); \n \
+	border: none; \n \
+	padding: 3px; \n \
+	border-radius: 100px; \n \
+	width: 100%; \n \
+} \n \
+ \n \
+.tab.bar { \n \
+	padding-left: 10px; \n \
+	height: 50px; \n \
+	background: rgb(80,80,80); \n \
+} \n \
+ \n \
+.tab.button { \n \
+	background: rgb(80,80,80); \n \
+	border: none; \n \
+	color: rgb(255,255,255); \n \
+	font-family: sans-serif; \n \
+	font-size: 18px; \n \
+	margin: 0px; \n \
+	height: 50px; \n \
+} \n \
+ \n \
+.tab.content_button { \n \
+	height: 30px; \n \
+	border: 2px solid rgb(120,120,120); \n \
+	background: rgb(80,80,80); \n \
+	border-radius: 100px; \n \
+	margin-top: 20px; \n \
+	margin-left:20px; \n \
+	margin-bottom: 5px; \n \
+	font-size: 15px; \n \
+	color: rgb(255,255,255); \n \
+	padding-left: 10px; \n \
+	padding-right: 10px; \n \
+} \n \
+ \n \
+.tab.button.active { \n \
+	background: rgb(120,120,120); \n \
+} \n \
+ \n \
+.region.table { \n \
+	background: linear-gradient(0deg, rgb(53,53,53) 80%, rgb(80,80,80) 80%); \n \
+	margin: 20px; \n \
+	margin-left: 10px; \n \
+	padding: 5px; \n \
+	border-radius: 5px; \n \
+	box-shadow: 0px 0px 22px 0px rgba(0,0,0,0.5); \n \
+	max-width: 500px; \n \
+	width: 95%; \n \
+} \n \
+.region.header { \n \
+	height: 40px; \n \
+	vertical-align: top; \n \
+} \n \
+.region.delete_button { \n \
+	background-color: rgb(32,33,36); \n \
+	width: 25px; \n \
+	height: 25px; \n \
+	border-radius: 100px; \n \
+	border: none; \n \
+	color: rgb(255,255,255); \n \
+} \n \
+.region.slider { \n \
+	-webkit-appearance: none; \n \
+	border-radius: 100px; \n \
+	width: 98%; \n \
+	height:  \n \
+} \n \
+.region.slider.red { \n \
+	background: linear-gradient(to right, rgb(0,0,0) , rgb(255,0,0) ); \n \
+} \n \
+.region.slider.green { \n \
+	background: linear-gradient(to right, rgb(0,0,0) , rgb(0,255,0) ); \n \
+} \n \
+.region.slider.blue { \n \
+	background: linear-gradient(to right, rgb(0,0,0) , rgb(0,0,255) ); \n \
 } \n";
 
 /****************************************************************
@@ -385,19 +569,29 @@ function Regions_AddRegion_OnClick() \n \
  ****************************************************************/
 esp_err_t web_index_html_handler(httpd_req_t *req)
 {
+    httpd_resp_set_type(req, "text/html");
 	httpd_resp_send(req, WEB_INDEX_HTML, strlen(WEB_INDEX_HTML));
 	return ESP_OK;
 }
 
 esp_err_t web_regioncontroller_js_handler(httpd_req_t *req)
 {
+    httpd_resp_set_type(req, "text/html");
 	httpd_resp_send(req, WEB_REGIONCONTROLLER_JS, strlen(WEB_REGIONCONTROLLER_JS));
 	return ESP_OK;
 }
 
 esp_err_t web_scripts_js_handler(httpd_req_t *req)
 {
+    httpd_resp_set_type(req, "text/html");
 	httpd_resp_send(req, WEB_SCRIPTS_JS, strlen(WEB_SCRIPTS_JS));
+	return ESP_OK;
+}
+
+esp_err_t web_style_css_handler(httpd_req_t *req)
+{
+    httpd_resp_set_type(req, "text/css");
+	httpd_resp_send(req, WEB_STYLE_CSS, strlen(WEB_STYLE_CSS));
 	return ESP_OK;
 }
 
@@ -406,4 +600,5 @@ void WebData_Populate(httpd_handle_t server)
 	httpd_register_uri_handler(server, &(httpd_uri_t){ "/index.html", .method = HTTP_GET, .handler = web_index_html_handler, .user_ctx = NULL });
 	httpd_register_uri_handler(server, &(httpd_uri_t){ "/RegionController.js", .method = HTTP_GET, .handler = web_regioncontroller_js_handler, .user_ctx = NULL });
 	httpd_register_uri_handler(server, &(httpd_uri_t){ "/scripts.js", .method = HTTP_GET, .handler = web_scripts_js_handler, .user_ctx = NULL });
+	httpd_register_uri_handler(server, &(httpd_uri_t){ "/style.css", .method = HTTP_GET, .handler = web_style_css_handler, .user_ctx = NULL });
 }

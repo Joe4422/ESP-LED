@@ -90,7 +90,7 @@ void func_shader_ping(const region_t * region)
 void func_shader_rainbow(const region_t * region)
 {
 	int ledIndex;
-	for (ledIndex = regionStart; ledIndex <= regionEnd; ledIndex++)
+	for (ledIndex = region->start; ledIndex <= region->end; ledIndex++)
 	{
 		colour_t col = Strip_Buffer_GetOne(ledIndex);
 
@@ -117,7 +117,7 @@ void func_shader_rainbow(const region_t * region)
 void func_shader_rainbow2(const region_t * region)
 {
 	int ledIndex;
-	for (ledIndex = regionStart; ledIndex <= regionEnd; ledIndex++)
+	for (ledIndex = region->start; ledIndex <= region->end; ledIndex++)
 	{
 		colour_t col = Strip_Buffer_GetOne(ledIndex);
 

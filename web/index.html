@@ -1,18 +1,33 @@
-<head>
-	<script src="scripts.js"></script>
-	<script src="RegionController.js"></script>
-</head>
-<body>
-	<div id="tab_control">
-		<button id="tab_control_regions" onclick="TabControls_Button_Regions_OnClick()" disabled="true">Regions</button>
-		<button id="tab_control_anchors" onclick="TabControls_Button_Anchors_OnClick()">Anchors</button>
-	</div>
-	<div id="tab_regions">
-		Regions
-		<button onclick="Regions_AddRegion_OnClick()">Add Region</button>
-	</div>
-	<div id="tab_anchors" style="display:none;">
-		Anchors
-	</div>
-	<script>Page_OnLoad();</script>
-</body>
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>ESP-IDF</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+		<script src="scripts.js"></script>
+		<script src="RegionController.js"></script>
+		
+		<link rel="stylesheet" href="style.css" type="text/css">
+	</head>
+	<body>
+		<div class="tab bar">
+			<button class="tab button" id="tab_button_controls" onclick="TabControls_Button_OnClick(this, 'tab_controls')">Controls</button>
+			<button class="tab button" id="tab_button_regions" onclick="TabControls_Button_OnClick(this, 'tab_regions')">Regions</button>
+			<button class="tab button" id="tab_button_anchors" onclick="TabControls_Button_OnClick(this, 'tab_anchors')">Anchors</button>
+		</div>
+		<div class="tab container">
+			<div class="tab content" id="tab_controls">
+				<button id="controls_button_toggle_power" class="tab content_button" onclick="Controls_Toggle_Power_OnClick()">Toggle Power</button>
+			</div>
+			<div class="tab content" id="tab_regions">
+				<button id="regions_button_refresh" class="tab content_button" onclick="Regions_Refresh_OnClick()">Refresh</button>
+				<button id="regions_button_add" class="tab content_button" onclick="Regions_Add_OnClick()">Add</button>
+				<button id="regions_button_clear" class="tab content_button" onclick="Regions_Clear_OnClick()">Clear</button>
+			</div>
+			<div class="tab content" id="tab_anchors">
+			
+			</div>
+		</div>
+		<script>Page_OnLoad();</script>
+	</body>
+</html>

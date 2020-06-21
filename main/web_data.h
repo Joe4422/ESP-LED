@@ -16,6 +16,8 @@ extern const char* WEB_REGIONCONTROLLER_JS;
 
 extern const char* WEB_SCRIPTS_JS;
 
+extern const char* WEB_STYLE_CSS;
+
 /****************************************************************
  * Function declarations
  ****************************************************************/

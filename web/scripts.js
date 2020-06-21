@@ -11,6 +11,8 @@ var shaderNames = [];
 var max_regions = 0;
 var max_shaders = 0;
 
+var region_load_progress = 0;
+
 function Page_OnLoad()
 {
 	tab_control_regions = document.getElementById("tab_control_regions");
@@ -21,6 +23,8 @@ function Page_OnLoad()
 	
 	Http_MakeRequest("/shader?get_shaders");
 	Http_MakeRequest("/region?get_max");
+	
+	document.getElementById("tab_button_controls").click();
 }
 
 /****************************************************************
@@ -32,6 +36,7 @@ function Http_Response_Region(response)
 	{
 		case "get_max":
 			max_regions = response[2];
+			region_load_progress = 0;
 			
 			for (i = 0; i < max_regions; i++)
 			{
@@ -39,6 +44,16 @@ function Http_Response_Region(response)
 			}
 			break;
 		case "get":
+			region_load_progress++;
+			if (region_load_progress == max_regions)
+			{
+				document.getElementById("regions_button_refresh").style = "";
+			}
+			else
+			{
+				var prog = (region_load_progress / max_regions) * 100;
+				document.getElementById("regions_button_refresh").style = "background: linear-gradient(90deg, rgb(90,130,150) " + prog + "%, rgb(80,80,80) " + prog + "%);";
+			}
 			if (response[2] != "null")
 			{
 				var rc = new RegionController(response[2], response[3], response[4], response[5], response[6], response[7], response[8]);
@@ -55,6 +70,8 @@ function Http_Response_Region(response)
 					console.log("Updated region index of region controller " + i + " to " + response[2]); 
 					regionControllers[i].regionIndex = response[2];
 					regionControllers[i].div.id = "region-" + response[2];
+					tab_regions.appendChild(regionControllers[i].div);
+					document.getElementById("regions_button_add").disabled = false;
 				}
 			}
 		default:
@@ -111,51 +128,37 @@ function Http_MakeRequest(request)
 /****************************************************************
  * Tab controls
  ****************************************************************/
-function TabControls_Button_Regions_OnClick()
+function TabControls_Button_OnClick(sender, name)
 {
-	tab_regions.style.display = "block";
-	tab_control_regions.disabled = true;
+	var tab_contents = document.getElementsByClassName("tab content");
+	for (i = 0; i < tab_contents.length; i++)
+	{
+		tab_contents[i].style.display = "none";
+	}
+	document.getElementById(name).style.display = "block";
 	
-	tab_anchors.style.display = "none";
-	tab_control_anchors.disabled = false;
+	var tab_buttons = document.getElementsByClassName("tab button");
+	for (i = 0; i < tab_buttons.length; i++)
+	{
+		tab_buttons[i].disabled = false;
+		tab_buttons[i].classList.remove("active");
+	}
+	sender.disabled = true;
+	sender.classList.add("active");
 }
 
-function TabControls_Button_Anchors_OnClick()
+/****************************************************************
+ * Controls
+ ****************************************************************/
+function Controls_Toggle_Power_OnClick()
 {
-	tab_anchors.style.display = "block";
-	tab_control_anchors.disabled = true;
-	
-	tab_regions.style.display = "none";
-	tab_control_regions.disabled = false;
+	Http_MakeRequest("config?toggle_power");
 }
 
 /****************************************************************
  * Regions
  ****************************************************************/
-function Regions_RegionController_Form_OnChange(index)
-{
-	var rc = regionControllers[index];
-	
-	rc.Update();
-}
-
-function Regions_RegionController_Delete_OnClick(index)
-{
-	var rc = regionControllers[index];
-	
-	rc.Delete();
-	
-	tab_regions.removeChild(rc.div);
-	
-	regionControllers.splice(index, 1);
-	
-	for (i = index; i < regionControllers.length; i++)
-	{
-		regionControllers[i].SetIndex(i);
-	}
-}
- 
-function Regions_AddRegion_OnClick()
+function Regions_Add_OnClick()
 {
 	if (regionControllers.length < max_regions)
 	{
@@ -165,6 +168,28 @@ function Regions_AddRegion_OnClick()
 		
 		regionControllers.push(rc);
 		
-		tab_regions.appendChild(rc.div);
+		document.getElementById("regions_button_add").disabled = true;
 	}
+}
+
+function Regions_Refresh_OnClick()
+{
+	var len = regionControllers.length;
+	for (i = 0; i < len; i++)
+	{
+		regionControllers[0].Remove();
+	}
+	
+	Http_MakeRequest("/region?get_max");
+}
+
+function Regions_Clear_OnClick()
+{
+	var len = regionControllers.length;
+	for (i = 0; i < len; i++)
+	{
+		regionControllers[0].Remove();
+	}
+	
+	Http_MakeRequest("/region?clear");
 }

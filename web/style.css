@@ -1,0 +1,98 @@
+body {
+	background-color: rgb(45,45,45);
+	font-family: sans-serif;
+	color: rgb(255,255,255);
+	margin: 0px;
+}
+
+input[type="text"] {
+	background-color: rgb(32,33,36);
+	border: none;
+	color: rgb(255,255,255);
+	border-radius: 100px;
+	padding: 3px;
+	padding-left: 5px;
+	width: 97%;
+	height:17.5px;
+}
+
+select {
+	background: rgb(32,33,36);
+	color: rgb(255,255,255);
+	border: none;
+	padding: 3px;
+	border-radius: 100px;
+	width: 100%;
+}
+
+.tab.bar {
+	padding-left: 10px;
+	height: 50px;
+	background: rgb(80,80,80);
+}
+
+.tab.button {
+	background: rgb(80,80,80);
+	border: none;
+	color: rgb(255,255,255);
+	font-family: sans-serif;
+	font-size: 18px;
+	margin: 0px;
+	height: 50px;
+}
+
+.tab.content_button {
+	height: 30px;
+	border: 2px solid rgb(120,120,120);
+	background: rgb(80,80,80);
+	border-radius: 100px;
+	margin-top: 20px;
+	margin-left:20px;
+	margin-bottom: 5px;
+	font-size: 15px;
+	color: rgb(255,255,255);
+	padding-left: 10px;
+	padding-right: 10px;
+}
+
+.tab.button.active {
+	background: rgb(120,120,120);
+}
+
+.region.table {
+	background: linear-gradient(0deg, rgb(53,53,53) 80%, rgb(80,80,80) 80%);
+	margin: 20px;
+	margin-left: 10px;
+	padding: 5px;
+	border-radius: 5px;
+	box-shadow: 0px 0px 22px 0px rgba(0,0,0,0.5);
+	max-width: 500px;
+	width: 95%;
+}
+.region.header {
+	height: 40px;
+	vertical-align: top;
+}
+.region.delete_button {
+	background-color: rgb(32,33,36);
+	width: 25px;
+	height: 25px;
+	border-radius: 100px;
+	border: none;
+	color: rgb(255,255,255);
+}
+.region.slider {
+	-webkit-appearance: none;
+	border-radius: 100px;
+	width: 98%;
+	height: 
+}
+.region.slider.red {
+	background: linear-gradient(to right, rgb(0,0,0) , rgb(255,0,0) );
+}
+.region.slider.green {
+	background: linear-gradient(to right, rgb(0,0,0) , rgb(0,255,0) );
+}
+.region.slider.blue {
+	background: linear-gradient(to right, rgb(0,0,0) , rgb(0,0,255) );
+}

@@ -61,6 +61,8 @@ char * RESPONSE_STATIC_SUCCESS =	"Success";
 #define 	 WEB_LOG_TAG_BASE		"Web Server "
 const char * WEB_LOG_TAG_WRITE =	WEB_LOG_TAG_BASE "(write)";
 const char * WEB_LOG_TAG_REGION =	WEB_LOG_TAG_BASE "(region)";
+const char * WEB_LOG_TAG_SHADER =	WEB_LOG_TAG_BASE "(shader)";
+const char * WEB_LOG_TAG_CONFIG =	WEB_LOG_TAG_BASE "(config)";
 
 #define TOKEN_SPLITTER	"-"
 
@@ -87,6 +89,7 @@ const token_type_t REGION_DELETE_ANCHOR_TOKEN_TYPES[] =	{ TOKEN_TYPE_STRING };
 #define BASE_WRITE_URI	"/write"
 #define BASE_REGION_URI	"/region"
 #define BASE_SHADER_URI "/shader"
+#define BASE_CONFIG_URI	"/config"
 
 /****************************************************************
  * Function declarations
@@ -95,6 +98,7 @@ esp_err_t get_write_handler(httpd_req_t *req);
 esp_err_t get_region_handler(httpd_req_t *req);
 esp_err_t get_index_handler(httpd_req_t *req);
 esp_err_t get_shader_handler(httpd_req_t *req);
+esp_err_t get_config_handler(httpd_req_t *req);
 
 bool ReadTokensIntoValues
 (
@@ -141,6 +145,14 @@ httpd_uri_t uri_shader_get =
 	.user_ctx = NULL
 };
 
+httpd_uri_t uri_config_get =
+{
+	.uri = BASE_CONFIG_URI,
+	.method = HTTP_GET,
+	.handler = get_config_handler,
+	.user_ctx = NULL
+};
+
 /****************************************************************
  * Function definitions
  ****************************************************************/
@@ -159,6 +171,7 @@ httpd_handle_t Webserver_Start()
 		httpd_register_uri_handler(server, &uri_region_get);
 		httpd_register_uri_handler(server, &uri_index_get);
 		httpd_register_uri_handler(server, &uri_shader_get);
+		httpd_register_uri_handler(server, &uri_config_get);
     }
 
     WebData_Populate(server);
@@ -351,7 +364,7 @@ esp_err_t get_region_handler(httpd_req_t *req)
 	char response_buffer[STRING_BUFFER_SIZE];
 	strcpy(response_buffer, RESPONSE_STATIC_FAILURE);
 
-	ESP_LOGI(WEB_LOG_TAG_WRITE, "Request at %s.", req->uri);
+	ESP_LOGI(WEB_LOG_TAG_REGION, "Request at %s.", req->uri);
 
 	if (CheckUriParameter(req->uri, BASE_REGION_URI, "create"))
 	{
@@ -412,6 +425,7 @@ esp_err_t get_region_handler(httpd_req_t *req)
 	{
 		ESP_LOGI(WEB_LOG_TAG_REGION, "Deleted all regions.");
 		Region_DeleteAll();
+		Strip_Buffer_SetAll(COLOUR_OFF);
 		strcpy(response_buffer, RESPONSE_STATIC_SUCCESS);
 	}
 	else if (CheckUriParameter(req->uri, BASE_REGION_URI, "get_max"))
@@ -431,11 +445,11 @@ esp_err_t get_region_handler(httpd_req_t *req)
 
 			if (region == NULL)
 			{
-				sprintf(response_buffer, "region data null");
+				sprintf(response_buffer, "region get null");
 			}
 			else
 			{
-				sprintf(response_buffer, "region get %d %d %d %d %d %d %d", regionIndex, region->start, region->end, region->shaderIndex, region->colour.red, region->colour.blue, region->colour.green);
+				sprintf(response_buffer, "region get %d %d %d %d %d %d %d", regionIndex, region->start, region->end, region->shaderIndex, region->colour.red, region->colour.green, region->colour.blue);
 			}
 		}
 	}
@@ -488,7 +502,7 @@ esp_err_t get_shader_handler(httpd_req_t *req)
 	char response_buffer[STRING_BUFFER_SIZE];
 	strcpy(response_buffer, RESPONSE_STATIC_FAILURE);
 
-	ESP_LOGI(WEB_LOG_TAG_WRITE, "Request at %s.", req->uri);
+	ESP_LOGI(WEB_LOG_TAG_SHADER, "Request at %s.", req->uri);
 
 	if (CheckUriParameter(req->uri, BASE_SHADER_URI, "get_shaders"))
 	{
@@ -501,6 +515,26 @@ esp_err_t get_shader_handler(httpd_req_t *req)
 		{
 			buffer_ptr += sprintf(buffer_ptr, " %s", SHADERS[i]->name);
 		}
+	}
+
+	httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+	httpd_resp_send(req, response_buffer, strlen(response_buffer));
+	return ESP_OK;
+}
+
+esp_err_t get_config_handler(httpd_req_t *req)
+{
+	char response_buffer[STRING_BUFFER_SIZE];
+	strcpy(response_buffer, RESPONSE_STATIC_FAILURE);
+
+	ESP_LOGI(WEB_LOG_TAG_CONFIG, "Request at %s.", req->uri);
+
+	if (CheckUriParameter(req->uri, BASE_CONFIG_URI, "toggle_power"))
+	{
+		ESP_LOGI(WEB_LOG_TAG_CONFIG, "Toggled power.");
+		global_config.strip_on = !global_config.strip_on;
+		Strip_Buffer_SetAll(COLOUR_OFF);
+		strcpy(response_buffer, RESPONSE_STATIC_SUCCESS);
 	}
 
 	httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");

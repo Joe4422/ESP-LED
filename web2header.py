@@ -1,4 +1,5 @@
 from os import listdir
+from os import path
 
 MAIN_DIR =      "main/"
 WEB_DIR =       "web/"
@@ -46,6 +47,7 @@ WEB_DATA_C_MID = """/***********************************************************
 
 WEB_DATA_C_HANDLER = """esp_err_t web_{}_handler(httpd_req_t *req)
 {{
+    httpd_resp_set_type(req, "{}");
 	httpd_resp_send(req, WEB_{}, strlen(WEB_{}));
 	return ESP_OK;
 }}
@@ -57,6 +59,9 @@ WEB_DATA_C_POPULATE_START = """void WebData_Populate(httpd_handle_t server)
 """
 
 WEB_DATA_C_POPULATE_REGISTER = """	httpd_register_uri_handler(server, &(httpd_uri_t){{ \"/{}\", .method = HTTP_GET, .handler = web_{}_handler, .user_ctx = NULL }});
+"""
+
+WEB_DATA_C_CSS_MIME_TYPE = """	httpd_resp_set_hdr(req, "Content-Type", "text/css");
 """
 
 WEB_DATA_C_POPULATE_END = "}"
@@ -83,7 +88,12 @@ WEB_DATA_H_DATA = WEB_DATA_H_DATA + WEB_DATA_H_END
 WEB_DATA_C_DATA = WEB_DATA_C_DATA + WEB_DATA_C_MID
 
 for file in files:
-    WEB_DATA_C_DATA = WEB_DATA_C_DATA + WEB_DATA_C_HANDLER.format(file.lower().replace(".", "_", 1), file.upper().replace(".", "_", 1), file.upper().replace(".", "_", 1))
+    ct = "";
+    if file.endswith(".css"): 
+        ct = "text/css"
+    else:
+        ct = "text/html"
+    WEB_DATA_C_DATA = WEB_DATA_C_DATA + WEB_DATA_C_HANDLER.format(file.lower().replace(".", "_", 1), ct, file.upper().replace(".", "_", 1), file.upper().replace(".", "_", 1))
     
 WEB_DATA_C_DATA = WEB_DATA_C_DATA + WEB_DATA_C_POPULATE_START
 

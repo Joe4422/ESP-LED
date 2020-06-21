@@ -4,7 +4,9 @@
 /****************************************************************
  * Includes
  ****************************************************************/
+// Project includes
 #include "colour.h"
+#include "region_manager.h"
 
 /****************************************************************
  * Defines, consts
@@ -21,7 +23,7 @@
  ****************************************************************/
 typedef struct shader
 {
-	void (* nextFrame)(uint16_t regionStart, uint16_t regionEnd, colour_t colour);
+	void (* nextFrame)(const region_t * region);
 	char *  name;
 } shader_t;
 

@@ -32,6 +32,8 @@ void Animator_Start(void)
 	runAnimation = true;
 	while (runAnimation)
 	{
+		if (global_config.strip_on == false) continue;
+
 		for (i = 0; i < REGION_COUNT; i++)
 		{
 			const region_t * regionData = Region_GetData(i);
@@ -41,7 +43,7 @@ void Animator_Start(void)
 			}
 			else
 			{
-				SHADERS[regionData->shaderIndex]->nextFrame(regionData->start, regionData->end, regionData->colour);
+				SHADERS[regionData->shaderIndex]->nextFrame(regionData);
 			}
 		}
 		Strip_Buffer_Push();

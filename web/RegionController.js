@@ -2,39 +2,69 @@ class RegionController
 {
 	constructor(regionIndex, startIndex, endIndex, shader, red, green, blue)
 	{
-		this.regionIndex = regionIndex;
+		this.region = regionIndex;
 		
 		this.div = document.createElement("div");
-		this.div.style = "border:1px solid black;";
+		this.div.setAttribute("class", "region");
+		this.div.regionController = this;
+		
+		var table = document.createElement("table");
+		table.setAttribute("class", "region table");
+	
+		// button_Delete
+		this.button_Delete = document.createElement("button");
+		this.button_Delete.innerHTML = "X";
+		this.button_Delete.onclick = this.Delete;
+		this.button_Delete.setAttribute("class", "region delete_button");
+
+		// header
+		var tr_header = document.createElement("tr");
+		tr_header.setAttribute("class", "region header");
+		this.td_label_header = document.createElement("td");
+		this.td_label_header.innerHTML = "Region " + regionIndex;
+		this.td_label_header.style="font-weight:bold; padding-top: 5px;";
+		var td_header_delete_button = document.createElement("td");
+		td_header_delete_button.style = "text-align:right;";
+		td_header_delete_button.appendChild(this.button_Delete);
+		tr_header.appendChild(this.td_label_header);
+		tr_header.appendChild(td_header_delete_button);
+		table.appendChild(tr_header);
 	
 		// textBox_Start
-		var div_textBox_Start = document.createElement("div");
-		var label_textBox_Start = document.createElement("label");
-		label_textBox_Start.innerHTML = "Start Index:";
+		var tr_textBox_Start = document.createElement("tr");
+		var td_label_textBox_Start = document.createElement("td");
+		td_label_textBox_Start.innerHTML = "Start Index";
+		var td_textBox_Start = document.createElement("td");
 		this.textBox_Start = document.createElement("input");
 		this.textBox_Start.setAttribute("type", "text");
 		this.textBox_Start.placeholder = "0";
 		this.textBox_Start.value = startIndex;
-		this.textBox_Start.setAttribute("onchange", "Regions_RegionController_Form_OnChange(" + regionControllers.length + ");");
-		div_textBox_Start.appendChild(label_textBox_Start);
-		div_textBox_Start.appendChild(this.textBox_Start);
+		this.textBox_Start.onchange = this.Update;
+		td_textBox_Start.appendChild(this.textBox_Start);
+		tr_textBox_Start.appendChild(td_label_textBox_Start);
+		tr_textBox_Start.appendChild(td_textBox_Start);
+		table.appendChild(tr_textBox_Start);
 		
 		// textBox_End
-		var div_textBox_End = document.createElement("div");
-		var label_textBox_End = document.createElement("label");
-		label_textBox_End.innerHTML = "End Index:";
+		var tr_textBox_End = document.createElement("tr");
+		var td_label_textBox_End = document.createElement("td");
+		td_label_textBox_End.innerHTML = "End Index";
+		var td_textBox_End = document.createElement("td");
 		this.textBox_End = document.createElement("input");
 		this.textBox_End.setAttribute("type", "text");
 		this.textBox_End.placeholder = "149";
 		this.textBox_End.value = endIndex;
-		this.textBox_End.setAttribute("onchange", "Regions_RegionController_Form_OnChange(" + regionControllers.length + ");");
-		div_textBox_End.appendChild(label_textBox_End);
-		div_textBox_End.appendChild(this.textBox_End);
+		this.textBox_End.onchange = this.Update;
+		td_textBox_End.appendChild(this.textBox_End);
+		tr_textBox_End.appendChild(td_label_textBox_End);
+		tr_textBox_End.appendChild(td_textBox_End);
+		table.appendChild(tr_textBox_End);
 		
 		// dropdown_Shader
-		var div_dropdown_Shader = document.createElement("div");
-		var label_dropdown_Shader = document.createElement("label");
-		label_dropdown_Shader.innerHTML = "Shader:";
+		var tr_dropdown_Shader = document.createElement("tr");
+		var td_label_dropdown_Shader = document.createElement("td");
+		td_label_dropdown_Shader.innerHTML = "Shader";
+		var td_dropdown_Shader = document.createElement("td");
 		this.dropdown_Shader = document.createElement("select");
 		for (i = 0; i < max_shaders; i++)
 		{
@@ -43,62 +73,75 @@ class RegionController
 			this.dropdown_Shader.appendChild(shader_option);
 		}		
 		this.dropdown_Shader.selectedIndex = shader;
-		this.dropdown_Shader.setAttribute("onchange", "Regions_RegionController_Form_OnChange(" + regionControllers.length + ");");
-		div_dropdown_Shader.appendChild(label_dropdown_Shader);
-		div_dropdown_Shader.appendChild(this.dropdown_Shader);
+		this.dropdown_Shader.onchange = this.Update;
+		td_dropdown_Shader.appendChild(this.dropdown_Shader);
+		tr_dropdown_Shader.appendChild(td_label_dropdown_Shader);
+		tr_dropdown_Shader.appendChild(td_dropdown_Shader);
+		table.appendChild(tr_dropdown_Shader);
 		
 		// slider_Red
-		var div_slider_Red = document.createElement("div");
-		var label_slider_Red = document.createElement("label");
-		label_slider_Red.innerHTML = "Red:";
+		var tr_slider_Red = document.createElement("tr");
+		var td_label_slider_Red = document.createElement("td");
+		td_label_slider_Red.innerHTML = "Red";
+		var td_slider_Red = document.createElement("td");
 		this.slider_Red = document.createElement("input");
 		this.slider_Red.setAttribute("type", "range");
 		this.slider_Red.min = 0;
 		this.slider_Red.max = 255;
 		this.slider_Red.value = red;
 		this.slider_Red.onchange = this.Update;
-		this.slider_Red.setAttribute("onchange", "Regions_RegionController_Form_OnChange(" + regionControllers.length + ");");
-		div_slider_Red.appendChild(label_slider_Red);
-		div_slider_Red.appendChild(this.slider_Red);
+		this.slider_Red.setAttribute("class", "region slider red");
+		td_slider_Red.appendChild(this.slider_Red);
+		tr_slider_Red.appendChild(td_label_slider_Red);
+		tr_slider_Red.appendChild(td_slider_Red);
+		table.appendChild(tr_slider_Red);
 		
 		// slider_Green
-		var div_slider_Green = document.createElement("div");
-		var label_slider_Green = document.createElement("label");
-		label_slider_Green.innerHTML = "Green:";
+		var tr_slider_Green = document.createElement("tr");
+		var td_label_slider_Green = document.createElement("td");
+		td_label_slider_Green.innerHTML = "Green";
+		var td_slider_Green = document.createElement("td");		
 		this.slider_Green = document.createElement("input");
 		this.slider_Green.setAttribute("type", "range");
 		this.slider_Green.min = 0;
 		this.slider_Green.max = 255;
 		this.slider_Green.value = green;
-		this.slider_Green.setAttribute("onchange", "Regions_RegionController_Form_OnChange(" + regionControllers.length + ");");
-		div_slider_Green.appendChild(label_slider_Green);
-		div_slider_Green.appendChild(this.slider_Green);
+		this.slider_Green.onchange = this.Update;
+		this.slider_Green.setAttribute("class", "region slider green");
+		td_slider_Green.appendChild(this.slider_Green);
+		tr_slider_Green.appendChild(td_label_slider_Green);
+		tr_slider_Green.appendChild(td_slider_Green);
+		table.appendChild(tr_slider_Green);
 		
 		// slider_Blue
-		var div_slider_Blue = document.createElement("div");
-		var label_slider_Blue = document.createElement("label");
-		label_slider_Blue.innerHTML = "Blue:";
+		var tr_slider_Blue = document.createElement("tr");
+		var td_label_slider_Blue = document.createElement("td");
+		td_label_slider_Blue.innerHTML = "Blue";
+		var td_slider_Blue = document.createElement("td");			
 		this.slider_Blue = document.createElement("input");
 		this.slider_Blue.setAttribute("type", "range");
 		this.slider_Blue.min = 0;
 		this.slider_Blue.max = 255;
 		this.slider_Blue.value = blue;
-		this.slider_Blue.setAttribute("onchange", "Regions_RegionController_Form_OnChange(" + regionControllers.length + ");");
-		div_slider_Blue.appendChild(label_slider_Blue);
-		div_slider_Blue.appendChild(this.slider_Blue);
-		
-		// button_Delete
-		this.button_Delete = document.createElement("button");
-		this.button_Delete.innerHTML = "Delete";
-		this.button_Delete.setAttribute("onclick", "Regions_RegionController_Delete_OnClick(" + regionControllers.length + ");");
-		
-		this.div.appendChild(div_textBox_Start);
-		this.div.appendChild(div_textBox_End);
-		this.div.appendChild(div_dropdown_Shader);
-		this.div.appendChild(div_slider_Red);
-		this.div.appendChild(div_slider_Green);
-		this.div.appendChild(div_slider_Blue);
-		this.div.appendChild(this.button_Delete);
+		this.slider_Blue.onchange = this.Update;
+		this.slider_Blue.setAttribute("class", "region slider blue");		
+		td_slider_Blue.appendChild(this.slider_Blue);
+		tr_slider_Blue.appendChild(td_label_slider_Blue);
+		tr_slider_Blue.appendChild(td_slider_Blue);
+		table.appendChild(tr_slider_Blue);
+				
+		this.div.appendChild(table);
+	}
+	
+	get regionIndex()
+	{
+		return this.region;
+	}
+	
+	set regionIndex(value)
+	{
+		this.region = value;
+		this.td_label_header.innerHTML = "Region " + value;
 	}
 	
 	get startIndex()
@@ -162,22 +205,24 @@ class RegionController
 	
 	Update()
 	{
-		Http_MakeRequest("/region?update-" + this.regionIndex + "-" + this.startIndex + "-" + this.endIndex + "-" + this.shader + "-" + this.red + "-" + this.green + "-" + this.blue);
+		var rc = this.parentNode.parentNode.parentNode.parentNode.regionController;
+		Http_MakeRequest("/region?update-" + rc.regionIndex + "-" + rc.startIndex + "-" + rc.endIndex + "-" + rc.shader + "-" + rc.red + "-" + rc.green + "-" + rc.blue);
 	}
 	
 	Delete()
 	{
-		Http_MakeRequest("/region?delete-" + this.regionIndex);
+		var rc = this.parentNode.parentNode.parentNode.parentNode.regionController;
+		Http_MakeRequest("/region?delete-" + rc.regionIndex);
+		
+		tab_regions.removeChild(rc.div);
+
+		regionControllers.splice(regionControllers.indexOf(rc), 1);
 	}
 	
-	SetIndex(index)
-	{
-		this.textBox_Start.setAttribute("onclick", "Regions_RegionController_Delete_OnClick(" + index + ");");
-		this.textBox_End.setAttribute("onclick", "Regions_RegionController_Delete_OnClick(" + index + ");");
-		this.dropdown_Shader.setAttribute("onclick", "Regions_RegionController_Delete_OnClick(" + index + ");");
-		this.slider_Red.setAttribute("onclick", "Regions_RegionController_Delete_OnClick(" + index + ");");
-		this.slider_Green.setAttribute("onclick", "Regions_RegionController_Delete_OnClick(" + index + ");");
-		this.slider_Blue.setAttribute("onclick", "Regions_RegionController_Delete_OnClick(" + index + ");");
-		this.button_Delete.setAttribute("onclick", "Regions_RegionController_Delete_OnClick(" + index + ");");
+	Remove()
+	{		
+		tab_regions.removeChild(this.div);
+
+		regionControllers.splice(regionControllers.indexOf(this), 1);
 	}
 }
