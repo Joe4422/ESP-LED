@@ -32,6 +32,7 @@ const char* WEB_REGIONCONTROLLER_JS = "class RegionController \n \
 		this.regionIndex = regionIndex; \n \
 		 \n \
 		this.div = document.createElement(\"div\"); \n \
+		this.div.style = \"border:1px solid black;\"; \n \
 	 \n \
 		// textBox_Start \n \
 		var div_textBox_Start = document.createElement(\"div\"); \n \
@@ -41,6 +42,7 @@ const char* WEB_REGIONCONTROLLER_JS = "class RegionController \n \
 		this.textBox_Start.setAttribute(\"type\", \"text\"); \n \
 		this.textBox_Start.placeholder = \"0\"; \n \
 		this.textBox_Start.value = startIndex; \n \
+		this.textBox_Start.setAttribute(\"onchange\", \"Regions_RegionController_Form_OnChange(\" + regionControllers.length + \");\"); \n \
 		div_textBox_Start.appendChild(label_textBox_Start); \n \
 		div_textBox_Start.appendChild(this.textBox_Start); \n \
 		 \n \
@@ -52,20 +54,25 @@ const char* WEB_REGIONCONTROLLER_JS = "class RegionController \n \
 		this.textBox_End.setAttribute(\"type\", \"text\"); \n \
 		this.textBox_End.placeholder = \"149\"; \n \
 		this.textBox_End.value = endIndex; \n \
+		this.textBox_End.setAttribute(\"onchange\", \"Regions_RegionController_Form_OnChange(\" + regionControllers.length + \");\"); \n \
 		div_textBox_End.appendChild(label_textBox_End); \n \
 		div_textBox_End.appendChild(this.textBox_End); \n \
 		 \n \
-		// ticker_Shader \n \
-		var div_ticker_Shader = document.createElement(\"div\"); \n \
-		var label_ticker_Shader = document.createElement(\"label\"); \n \
-		label_ticker_Shader.innerHTML = \"Shader:\"; \n \
-		this.ticker_Shader = document.createElement(\"input\"); \n \
-		this.ticker_Shader.setAttribute(\"type\", \"number\"); \n \
-		this.ticker_Shader.min = 0; \n \
-		this.ticker_Shader.max = 3; \n \
-		this.ticker_Shader.value = shader; \n \
-		div_ticker_Shader.appendChild(label_ticker_Shader); \n \
-		div_ticker_Shader.appendChild(this.ticker_Shader); \n \
+		// dropdown_Shader \n \
+		var div_dropdown_Shader = document.createElement(\"div\"); \n \
+		var label_dropdown_Shader = document.createElement(\"label\"); \n \
+		label_dropdown_Shader.innerHTML = \"Shader:\"; \n \
+		this.dropdown_Shader = document.createElement(\"select\"); \n \
+		for (i = 0; i < max_shaders; i++) \n \
+		{ \n \
+			var shader_option = document.createElement(\"option\"); \n \
+			shader_option.innerHTML = shaderNames[i]; \n \
+			this.dropdown_Shader.appendChild(shader_option); \n \
+		}		 \n \
+		this.dropdown_Shader.selectedIndex = shader; \n \
+		this.dropdown_Shader.setAttribute(\"onchange\", \"Regions_RegionController_Form_OnChange(\" + regionControllers.length + \");\"); \n \
+		div_dropdown_Shader.appendChild(label_dropdown_Shader); \n \
+		div_dropdown_Shader.appendChild(this.dropdown_Shader); \n \
 		 \n \
 		// slider_Red \n \
 		var div_slider_Red = document.createElement(\"div\"); \n \
@@ -76,6 +83,8 @@ const char* WEB_REGIONCONTROLLER_JS = "class RegionController \n \
 		this.slider_Red.min = 0; \n \
 		this.slider_Red.max = 255; \n \
 		this.slider_Red.value = red; \n \
+		this.slider_Red.onchange = this.Update; \n \
+		this.slider_Red.setAttribute(\"onchange\", \"Regions_RegionController_Form_OnChange(\" + regionControllers.length + \");\"); \n \
 		div_slider_Red.appendChild(label_slider_Red); \n \
 		div_slider_Red.appendChild(this.slider_Red); \n \
 		 \n \
@@ -88,6 +97,7 @@ const char* WEB_REGIONCONTROLLER_JS = "class RegionController \n \
 		this.slider_Green.min = 0; \n \
 		this.slider_Green.max = 255; \n \
 		this.slider_Green.value = green; \n \
+		this.slider_Green.setAttribute(\"onchange\", \"Regions_RegionController_Form_OnChange(\" + regionControllers.length + \");\"); \n \
 		div_slider_Green.appendChild(label_slider_Green); \n \
 		div_slider_Green.appendChild(this.slider_Green); \n \
 		 \n \
@@ -100,13 +110,9 @@ const char* WEB_REGIONCONTROLLER_JS = "class RegionController \n \
 		this.slider_Blue.min = 0; \n \
 		this.slider_Blue.max = 255; \n \
 		this.slider_Blue.value = blue; \n \
+		this.slider_Blue.setAttribute(\"onchange\", \"Regions_RegionController_Form_OnChange(\" + regionControllers.length + \");\"); \n \
 		div_slider_Blue.appendChild(label_slider_Blue); \n \
 		div_slider_Blue.appendChild(this.slider_Blue); \n \
-		 \n \
-		// button_Save \n \
-		this.button_Save = document.createElement(\"button\"); \n \
-		this.button_Save.innerHTML = \"Save\"; \n \
-		this.button_Save.setAttribute(\"onclick\", \"Regions_RegionController_Save_OnClick(\" + regionControllers.length + \");\"); \n \
 		 \n \
 		// button_Delete \n \
 		this.button_Delete = document.createElement(\"button\"); \n \
@@ -115,11 +121,10 @@ const char* WEB_REGIONCONTROLLER_JS = "class RegionController \n \
 		 \n \
 		this.div.appendChild(div_textBox_Start); \n \
 		this.div.appendChild(div_textBox_End); \n \
-		this.div.appendChild(div_ticker_Shader); \n \
+		this.div.appendChild(div_dropdown_Shader); \n \
 		this.div.appendChild(div_slider_Red); \n \
 		this.div.appendChild(div_slider_Green); \n \
 		this.div.appendChild(div_slider_Blue); \n \
-		this.div.appendChild(this.button_Save); \n \
 		this.div.appendChild(this.button_Delete); \n \
 	} \n \
 	 \n \
@@ -143,11 +148,11 @@ const char* WEB_REGIONCONTROLLER_JS = "class RegionController \n \
 	 \n \
 	get shader() \n \
 	{ \n \
-		return this.ticker_Shader.value; \n \
+		return this.dropdown_Shader.selectedIndex; \n \
 	} \n \
 	set shader(value) \n \
 	{ \n \
-		this.ticker_Shader.value = value; \n \
+		this.dropdown_Shader.selectedIndex = value; \n \
 	} \n \
 	 \n \
 	get red() \n \
@@ -194,7 +199,12 @@ const char* WEB_REGIONCONTROLLER_JS = "class RegionController \n \
 	 \n \
 	SetIndex(index) \n \
 	{ \n \
-		this.button_Save.setAttribute(\"onclick\", \"Regions_RegionController_Save_OnClick(\" + index + \");\"); \n \
+		this.textBox_Start.setAttribute(\"onclick\", \"Regions_RegionController_Delete_OnClick(\" + index + \");\"); \n \
+		this.textBox_End.setAttribute(\"onclick\", \"Regions_RegionController_Delete_OnClick(\" + index + \");\"); \n \
+		this.dropdown_Shader.setAttribute(\"onclick\", \"Regions_RegionController_Delete_OnClick(\" + index + \");\"); \n \
+		this.slider_Red.setAttribute(\"onclick\", \"Regions_RegionController_Delete_OnClick(\" + index + \");\"); \n \
+		this.slider_Green.setAttribute(\"onclick\", \"Regions_RegionController_Delete_OnClick(\" + index + \");\"); \n \
+		this.slider_Blue.setAttribute(\"onclick\", \"Regions_RegionController_Delete_OnClick(\" + index + \");\"); \n \
 		this.button_Delete.setAttribute(\"onclick\", \"Regions_RegionController_Delete_OnClick(\" + index + \");\"); \n \
 	} \n \
 } \n";
@@ -207,7 +217,10 @@ var tab_anchors; \n \
  \n \
 var regionControllers = []; \n \
  \n \
+var shaderNames = []; \n \
+ \n \
 var max_regions = 0; \n \
+var max_shaders = 0; \n \
  \n \
 function Page_OnLoad() \n \
 { \n \
@@ -217,6 +230,7 @@ function Page_OnLoad() \n \
 	tab_regions = document.getElementById(\"tab_regions\"); \n \
 	tab_anchors = document.getElementById(\"tab_anchors\"); \n \
 	 \n \
+	Http_MakeRequest(\"/shader?get_shaders\"); \n \
 	Http_MakeRequest(\"/region?get_max\"); \n \
 } \n \
  \n \
@@ -227,7 +241,7 @@ function Http_Response_Region(response) \n \
 { \n \
 	switch (response[1]) \n \
 	{ \n \
-		case \"max\": \n \
+		case \"get_max\": \n \
 			max_regions = response[2]; \n \
 			 \n \
 			for (i = 0; i < max_regions; i++) \n \
@@ -235,7 +249,7 @@ function Http_Response_Region(response) \n \
 				Http_MakeRequest(\"/region?get-\" + i); \n \
 			} \n \
 			break; \n \
-		case \"data\": \n \
+		case \"get\": \n \
 			if (response[2] != \"null\") \n \
 			{ \n \
 				var rc = new RegionController(response[2], response[3], response[4], response[5], response[6], response[7], response[8]); \n \
@@ -244,7 +258,7 @@ function Http_Response_Region(response) \n \
 				rc.div.id = \"region-\" + response[2]; \n \
 			} \n \
 			break; \n \
-		case \"created\": \n \
+		case \"create\": \n \
 			for (i = 0; i < regionControllers.length; i++) \n \
 			{ \n \
 				if (regionControllers[i].regionIndex === null) \n \
@@ -253,6 +267,22 @@ function Http_Response_Region(response) \n \
 					regionControllers[i].regionIndex = response[2]; \n \
 					regionControllers[i].div.id = \"region-\" + response[2]; \n \
 				} \n \
+			} \n \
+		default: \n \
+			break; \n \
+	} \n \
+} \n \
+ \n \
+function Http_Response_Shader(response) \n \
+{ \n \
+	switch (response[1]) \n \
+	{ \n \
+		case \"get_shaders\": \n \
+			max_shaders = response[2]; \n \
+			 \n \
+			for (i = 0; i < max_shaders; i++) \n \
+			{ \n \
+				shaderNames.push(response[i + 3]); \n \
 			} \n \
 		default: \n \
 			break; \n \
@@ -268,6 +298,9 @@ function Http_RequestEventListener() \n \
 	{ \n \
 		case \"region\": \n \
 			Http_Response_Region(response); \n \
+			break; \n \
+		case \"shader\": \n \
+			Http_Response_Shader(response); \n \
 			break; \n \
 		default: \n \
 			break; \n \
@@ -310,7 +343,7 @@ function TabControls_Button_Anchors_OnClick() \n \
 /**************************************************************** \n \
  * Regions \n \
  ****************************************************************/ \n \
-function Regions_RegionController_Save_OnClick(index) \n \
+function Regions_RegionController_Form_OnChange(index) \n \
 { \n \
 	var rc = regionControllers[index]; \n \
 	 \n \

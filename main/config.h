@@ -26,7 +26,7 @@ extern const config_t CONFIG_DEFAULT;
 
 #define NUM_LEDS	150
 
-#define ANIMATION_DELAY_MS	200
+#define ANIMATION_DELAY_MS	20
 
 #define WIFI_MAX_RETRIES	10
 

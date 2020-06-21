@@ -6,7 +6,10 @@ var tab_anchors;
 
 var regionControllers = [];
 
+var shaderNames = [];
+
 var max_regions = 0;
+var max_shaders = 0;
 
 function Page_OnLoad()
 {
@@ -16,6 +19,7 @@ function Page_OnLoad()
 	tab_regions = document.getElementById("tab_regions");
 	tab_anchors = document.getElementById("tab_anchors");
 	
+	Http_MakeRequest("/shader?get_shaders");
 	Http_MakeRequest("/region?get_max");
 }
 
@@ -26,7 +30,7 @@ function Http_Response_Region(response)
 {
 	switch (response[1])
 	{
-		case "max":
+		case "get_max":
 			max_regions = response[2];
 			
 			for (i = 0; i < max_regions; i++)
@@ -34,7 +38,7 @@ function Http_Response_Region(response)
 				Http_MakeRequest("/region?get-" + i);
 			}
 			break;
-		case "data":
+		case "get":
 			if (response[2] != "null")
 			{
 				var rc = new RegionController(response[2], response[3], response[4], response[5], response[6], response[7], response[8]);
@@ -43,7 +47,7 @@ function Http_Response_Region(response)
 				rc.div.id = "region-" + response[2];
 			}
 			break;
-		case "created":
+		case "create":
 			for (i = 0; i < regionControllers.length; i++)
 			{
 				if (regionControllers[i].regionIndex === null)
@@ -52,6 +56,22 @@ function Http_Response_Region(response)
 					regionControllers[i].regionIndex = response[2];
 					regionControllers[i].div.id = "region-" + response[2];
 				}
+			}
+		default:
+			break;
+	}
+}
+
+function Http_Response_Shader(response)
+{
+	switch (response[1])
+	{
+		case "get_shaders":
+			max_shaders = response[2];
+			
+			for (i = 0; i < max_shaders; i++)
+			{
+				shaderNames.push(response[i + 3]);
 			}
 		default:
 			break;
@@ -67,6 +87,9 @@ function Http_RequestEventListener()
 	{
 		case "region":
 			Http_Response_Region(response);
+			break;
+		case "shader":
+			Http_Response_Shader(response);
 			break;
 		default:
 			break;
@@ -109,7 +132,7 @@ function TabControls_Button_Anchors_OnClick()
 /****************************************************************
  * Regions
  ****************************************************************/
-function Regions_RegionController_Save_OnClick(index)
+function Regions_RegionController_Form_OnChange(index)
 {
 	var rc = regionControllers[index];
 	

@@ -86,6 +86,7 @@ const token_type_t REGION_DELETE_ANCHOR_TOKEN_TYPES[] =	{ TOKEN_TYPE_STRING };
 
 #define BASE_WRITE_URI	"/write"
 #define BASE_REGION_URI	"/region"
+#define BASE_SHADER_URI "/shader"
 
 /****************************************************************
  * Function declarations
@@ -93,6 +94,7 @@ const token_type_t REGION_DELETE_ANCHOR_TOKEN_TYPES[] =	{ TOKEN_TYPE_STRING };
 esp_err_t get_write_handler(httpd_req_t *req);
 esp_err_t get_region_handler(httpd_req_t *req);
 esp_err_t get_index_handler(httpd_req_t *req);
+esp_err_t get_shader_handler(httpd_req_t *req);
 
 bool ReadTokensIntoValues
 (
@@ -131,6 +133,14 @@ httpd_uri_t uri_index_get =
 	.user_ctx = NULL
 };
 
+httpd_uri_t uri_shader_get =
+{
+	.uri = BASE_SHADER_URI,
+	.method = HTTP_GET,
+	.handler = get_shader_handler,
+	.user_ctx = NULL
+};
+
 /****************************************************************
  * Function definitions
  ****************************************************************/
@@ -148,6 +158,7 @@ httpd_handle_t Webserver_Start()
         httpd_register_uri_handler(server, &uri_write_get);
 		httpd_register_uri_handler(server, &uri_region_get);
 		httpd_register_uri_handler(server, &uri_index_get);
+		httpd_register_uri_handler(server, &uri_shader_get);
     }
 
     WebData_Populate(server);
@@ -301,7 +312,7 @@ esp_err_t get_write_handler(httpd_req_t *req)
 
 	response = &RESPONSE_STATIC_FAILURE;
 
-	ESP_LOGI(WEB_LOG_TAG_WRITE, "Request at %s", req->uri);
+	ESP_LOGI(WEB_LOG_TAG_WRITE, "Request at %s.", req->uri);
 	
 	if (CheckUriParameter(req->uri, BASE_WRITE_URI, "all"))
 	{
@@ -354,7 +365,7 @@ esp_err_t get_region_handler(httpd_req_t *req)
 
 				if (Region_Create(region, &index))
 				{
-					sprintf(response_buffer, "region created %d", index);
+					sprintf(response_buffer, "region create %d", index);
 
 					ESP_LOGI(WEB_LOG_TAG_REGION, "Created region from %d to %d with shader %s.", region.start, region.end, SHADERS[region.shaderIndex]->name);
 				}
@@ -406,7 +417,7 @@ esp_err_t get_region_handler(httpd_req_t *req)
 	else if (CheckUriParameter(req->uri, BASE_REGION_URI, "get_max"))
 	{
 		ESP_LOGI(WEB_LOG_TAG_REGION, "Request for max regions (%d)", REGION_COUNT);
-		sprintf(response_buffer, "region max %d", REGION_COUNT);
+		sprintf(response_buffer, "region get_max %d", REGION_COUNT);
 	}
 	else if (CheckUriParameter(req->uri, BASE_REGION_URI, "get"))
 	{
@@ -424,7 +435,7 @@ esp_err_t get_region_handler(httpd_req_t *req)
 			}
 			else
 			{
-				sprintf(response_buffer, "region data %d %d %d %d %d %d %d", regionIndex, region->start, region->end, region->shaderIndex, region->colour.red, region->colour.blue, region->colour.green);
+				sprintf(response_buffer, "region get %d %d %d %d %d %d %d", regionIndex, region->start, region->end, region->shaderIndex, region->colour.red, region->colour.blue, region->colour.green);
 			}
 		}
 	}
@@ -470,4 +481,29 @@ esp_err_t get_index_handler(httpd_req_t *req)
 {
     httpd_resp_send(req, WEB_INDEX_HTML, strlen(WEB_INDEX_HTML));
     return ESP_OK;
+}
+
+esp_err_t get_shader_handler(httpd_req_t *req)
+{
+	char response_buffer[STRING_BUFFER_SIZE];
+	strcpy(response_buffer, RESPONSE_STATIC_FAILURE);
+
+	ESP_LOGI(WEB_LOG_TAG_WRITE, "Request at %s.", req->uri);
+
+	if (CheckUriParameter(req->uri, BASE_SHADER_URI, "get_shaders"))
+	{
+		uint8_t i;
+		char * buffer_ptr = response_buffer;
+
+		buffer_ptr += sprintf(response_buffer, "shader get_shaders %d", NUM_SHADERS);
+
+		for (i = 0; i < NUM_SHADERS; i++)
+		{
+			buffer_ptr += sprintf(buffer_ptr, " %s", SHADERS[i]->name);
+		}
+	}
+
+	httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+	httpd_resp_send(req, response_buffer, strlen(response_buffer));
+	return ESP_OK;
 }

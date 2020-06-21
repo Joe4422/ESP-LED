@@ -9,10 +9,10 @@
 /****************************************************************
  * Function declarations
  ****************************************************************/
-void func_shader_default(uint16_t regionStart, uint16_t regionEnd, colour_t colour);
-void func_shader_ping(uint16_t regionStart, uint16_t regionEnd, colour_t colour);
-void func_shader_rainbow(uint16_t regionStart, uint16_t regionEnd, colour_t colour);
-void func_shader_rainbow2(uint16_t regionStart, uint16_t regionEnd, colour_t colour);
+void func_shader_default(const region_t * region);
+void func_shader_ping(const region_t * region);
+void func_shader_rainbow(const region_t * region);
+void func_shader_rainbow2(const region_t * region);
 
 /****************************************************************
  * Defines, consts
@@ -46,16 +46,16 @@ const shader_t * SHADERS[] = { &shader_default, &shader_ping, &shader_rainbow, &
 /****************************************************************
  * Function definitions
  ****************************************************************/
-void func_shader_default(uint16_t regionStart, uint16_t regionEnd, colour_t colour)
+void func_shader_default(const region_t * region)
 {
-	Strip_Buffer_SetArea(regionStart, regionEnd, colour);
+	Strip_Buffer_SetArea(region->start, region->end, region->colour);
 }
 
-void func_shader_ping(uint16_t regionStart, uint16_t regionEnd, colour_t colour)
+void func_shader_ping(const region_t * region)
 {
 	int ledIndex = 0;
 	uint8_t foundLed = 0;
-	for (ledIndex = regionStart; ledIndex <= regionEnd; ledIndex++)
+	for (ledIndex = region->start; ledIndex <= region->end; ledIndex++)
 	{
 		colour_t col = Strip_Buffer_GetOne(ledIndex);
 
@@ -72,22 +72,22 @@ void func_shader_ping(uint16_t regionStart, uint16_t regionEnd, colour_t colour)
 
 	if (foundLed == 0)
 	{
-		Strip_Buffer_SetOne(regionStart, colour);
+		Strip_Buffer_SetOne(region->start, region->colour);
 	}
 
-	if (ledIndex == regionEnd)
+	if (ledIndex == region->end)
 	{
 		Strip_Buffer_SetOne(ledIndex, COLOUR_OFF);
-		Strip_Buffer_SetOne(regionStart, colour);
+		Strip_Buffer_SetOne(region->start, region->colour);
 	}
 	else
 	{
 		Strip_Buffer_SetOne(ledIndex, COLOUR_OFF);
-		Strip_Buffer_SetOne(ledIndex + 1, colour);
+		Strip_Buffer_SetOne(ledIndex + 1, region->colour);
 	}
 }
 
-void func_shader_rainbow(uint16_t regionStart, uint16_t regionEnd, colour_t colour)
+void func_shader_rainbow(const region_t * region)
 {
 	int ledIndex;
 	for (ledIndex = regionStart; ledIndex <= regionEnd; ledIndex++)
@@ -114,7 +114,7 @@ void func_shader_rainbow(uint16_t regionStart, uint16_t regionEnd, colour_t colo
 	}
 }
 
-void func_shader_rainbow2(uint16_t regionStart, uint16_t regionEnd, colour_t colour)
+void func_shader_rainbow2(const region_t * region)
 {
 	int ledIndex;
 	for (ledIndex = regionStart; ledIndex <= regionEnd; ledIndex++)

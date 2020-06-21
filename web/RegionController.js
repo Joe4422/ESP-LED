@@ -5,6 +5,7 @@ class RegionController
 		this.regionIndex = regionIndex;
 		
 		this.div = document.createElement("div");
+		this.div.style = "border:1px solid black;";
 	
 		// textBox_Start
 		var div_textBox_Start = document.createElement("div");
@@ -14,6 +15,7 @@ class RegionController
 		this.textBox_Start.setAttribute("type", "text");
 		this.textBox_Start.placeholder = "0";
 		this.textBox_Start.value = startIndex;
+		this.textBox_Start.setAttribute("onchange", "Regions_RegionController_Form_OnChange(" + regionControllers.length + ");");
 		div_textBox_Start.appendChild(label_textBox_Start);
 		div_textBox_Start.appendChild(this.textBox_Start);
 		
@@ -25,20 +27,25 @@ class RegionController
 		this.textBox_End.setAttribute("type", "text");
 		this.textBox_End.placeholder = "149";
 		this.textBox_End.value = endIndex;
+		this.textBox_End.setAttribute("onchange", "Regions_RegionController_Form_OnChange(" + regionControllers.length + ");");
 		div_textBox_End.appendChild(label_textBox_End);
 		div_textBox_End.appendChild(this.textBox_End);
 		
-		// ticker_Shader
-		var div_ticker_Shader = document.createElement("div");
-		var label_ticker_Shader = document.createElement("label");
-		label_ticker_Shader.innerHTML = "Shader:";
-		this.ticker_Shader = document.createElement("input");
-		this.ticker_Shader.setAttribute("type", "number");
-		this.ticker_Shader.min = 0;
-		this.ticker_Shader.max = 3;
-		this.ticker_Shader.value = shader;
-		div_ticker_Shader.appendChild(label_ticker_Shader);
-		div_ticker_Shader.appendChild(this.ticker_Shader);
+		// dropdown_Shader
+		var div_dropdown_Shader = document.createElement("div");
+		var label_dropdown_Shader = document.createElement("label");
+		label_dropdown_Shader.innerHTML = "Shader:";
+		this.dropdown_Shader = document.createElement("select");
+		for (i = 0; i < max_shaders; i++)
+		{
+			var shader_option = document.createElement("option");
+			shader_option.innerHTML = shaderNames[i];
+			this.dropdown_Shader.appendChild(shader_option);
+		}		
+		this.dropdown_Shader.selectedIndex = shader;
+		this.dropdown_Shader.setAttribute("onchange", "Regions_RegionController_Form_OnChange(" + regionControllers.length + ");");
+		div_dropdown_Shader.appendChild(label_dropdown_Shader);
+		div_dropdown_Shader.appendChild(this.dropdown_Shader);
 		
 		// slider_Red
 		var div_slider_Red = document.createElement("div");
@@ -49,6 +56,8 @@ class RegionController
 		this.slider_Red.min = 0;
 		this.slider_Red.max = 255;
 		this.slider_Red.value = red;
+		this.slider_Red.onchange = this.Update;
+		this.slider_Red.setAttribute("onchange", "Regions_RegionController_Form_OnChange(" + regionControllers.length + ");");
 		div_slider_Red.appendChild(label_slider_Red);
 		div_slider_Red.appendChild(this.slider_Red);
 		
@@ -61,6 +70,7 @@ class RegionController
 		this.slider_Green.min = 0;
 		this.slider_Green.max = 255;
 		this.slider_Green.value = green;
+		this.slider_Green.setAttribute("onchange", "Regions_RegionController_Form_OnChange(" + regionControllers.length + ");");
 		div_slider_Green.appendChild(label_slider_Green);
 		div_slider_Green.appendChild(this.slider_Green);
 		
@@ -73,13 +83,9 @@ class RegionController
 		this.slider_Blue.min = 0;
 		this.slider_Blue.max = 255;
 		this.slider_Blue.value = blue;
+		this.slider_Blue.setAttribute("onchange", "Regions_RegionController_Form_OnChange(" + regionControllers.length + ");");
 		div_slider_Blue.appendChild(label_slider_Blue);
 		div_slider_Blue.appendChild(this.slider_Blue);
-		
-		// button_Save
-		this.button_Save = document.createElement("button");
-		this.button_Save.innerHTML = "Save";
-		this.button_Save.setAttribute("onclick", "Regions_RegionController_Save_OnClick(" + regionControllers.length + ");");
 		
 		// button_Delete
 		this.button_Delete = document.createElement("button");
@@ -88,11 +94,10 @@ class RegionController
 		
 		this.div.appendChild(div_textBox_Start);
 		this.div.appendChild(div_textBox_End);
-		this.div.appendChild(div_ticker_Shader);
+		this.div.appendChild(div_dropdown_Shader);
 		this.div.appendChild(div_slider_Red);
 		this.div.appendChild(div_slider_Green);
 		this.div.appendChild(div_slider_Blue);
-		this.div.appendChild(this.button_Save);
 		this.div.appendChild(this.button_Delete);
 	}
 	
@@ -116,11 +121,11 @@ class RegionController
 	
 	get shader()
 	{
-		return this.ticker_Shader.value;
+		return this.dropdown_Shader.selectedIndex;
 	}
 	set shader(value)
 	{
-		this.ticker_Shader.value = value;
+		this.dropdown_Shader.selectedIndex = value;
 	}
 	
 	get red()
@@ -167,7 +172,12 @@ class RegionController
 	
 	SetIndex(index)
 	{
-		this.button_Save.setAttribute("onclick", "Regions_RegionController_Save_OnClick(" + index + ");");
+		this.textBox_Start.setAttribute("onclick", "Regions_RegionController_Delete_OnClick(" + index + ");");
+		this.textBox_End.setAttribute("onclick", "Regions_RegionController_Delete_OnClick(" + index + ");");
+		this.dropdown_Shader.setAttribute("onclick", "Regions_RegionController_Delete_OnClick(" + index + ");");
+		this.slider_Red.setAttribute("onclick", "Regions_RegionController_Delete_OnClick(" + index + ");");
+		this.slider_Green.setAttribute("onclick", "Regions_RegionController_Delete_OnClick(" + index + ");");
+		this.slider_Blue.setAttribute("onclick", "Regions_RegionController_Delete_OnClick(" + index + ");");
 		this.button_Delete.setAttribute("onclick", "Regions_RegionController_Delete_OnClick(" + index + ");");
 	}
 }
