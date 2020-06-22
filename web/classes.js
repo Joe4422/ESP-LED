@@ -52,7 +52,7 @@ class RegionController
 		var td_textBox_End = document.createElement("td");
 		this.textBox_End = document.createElement("input");
 		this.textBox_End.setAttribute("type", "text");
-		this.textBox_End.placeholder = "149";
+		this.textBox_End.placeholder = num_leds;
 		this.textBox_End.value = endIndex;
 		this.textBox_End.onchange = this.Update;
 		td_textBox_End.appendChild(this.textBox_End);
@@ -90,6 +90,7 @@ class RegionController
 		this.slider_Red.max = 255;
 		this.slider_Red.value = red;
 		this.slider_Red.onchange = this.Update;
+		this.slider_Red.oninput = this.UpdateColour;
 		this.slider_Red.setAttribute("class", "region slider red");
 		td_slider_Red.appendChild(this.slider_Red);
 		tr_slider_Red.appendChild(td_label_slider_Red);
@@ -107,6 +108,7 @@ class RegionController
 		this.slider_Green.max = 255;
 		this.slider_Green.value = green;
 		this.slider_Green.onchange = this.Update;
+		this.slider_Green.oninput = this.UpdateColour;
 		this.slider_Green.setAttribute("class", "region slider green");
 		td_slider_Green.appendChild(this.slider_Green);
 		tr_slider_Green.appendChild(td_label_slider_Green);
@@ -124,12 +126,22 @@ class RegionController
 		this.slider_Blue.max = 255;
 		this.slider_Blue.value = blue;
 		this.slider_Blue.onchange = this.Update;
-		this.slider_Blue.setAttribute("class", "region slider blue");		
+		this.slider_Blue.oninput = this.UpdateColour;
+		this.slider_Blue.setAttribute("class", "region slider blue");
 		td_slider_Blue.appendChild(this.slider_Blue);
 		tr_slider_Blue.appendChild(td_label_slider_Blue);
 		tr_slider_Blue.appendChild(td_slider_Blue);
 		table.appendChild(tr_slider_Blue);
-				
+
+		// mixer
+		var tr_mixer = document.createElement("tr");
+		var td_label_mixer = document.createElement("td");
+		this.td_mixer = document.createElement("td");
+		this.td_mixer.style = "height: 17.5px; background: rgb(" + this.red + "," + this.green + "," + this.blue + ");";
+		tr_mixer.appendChild(td_label_mixer);
+		tr_mixer.appendChild(this.td_mixer);
+		table.appendChild(tr_mixer);
+		
 		this.div.appendChild(table);
 	}
 	
@@ -200,19 +212,25 @@ class RegionController
 	
 	Create()
 	{
-		Http_MakeRequest("/region?create-" + this.startIndex + "-" + this.endIndex + "-" + this.shader + "-" + this.red + "-" + this.green + "-" + this.blue);
+		Http_MakeRequest("/api?region-create:" + this.startIndex + "," + this.endIndex + "," + this.shader + "," + this.red + "," + this.green + "," + this.blue);
 	}
 	
 	Update()
 	{
 		var rc = this.parentNode.parentNode.parentNode.parentNode.regionController;
-		Http_MakeRequest("/region?update-" + rc.regionIndex + "-" + rc.startIndex + "-" + rc.endIndex + "-" + rc.shader + "-" + rc.red + "-" + rc.green + "-" + rc.blue);
+		Http_MakeRequest("/api?region-update:" + rc.regionIndex + "," + rc.startIndex + "," + rc.endIndex + "," + rc.shader + "," + rc.red + "," + rc.green + "," + rc.blue);
+	}
+	
+	UpdateColour()
+	{
+		var rc = this.parentNode.parentNode.parentNode.parentNode.regionController;
+		rc.td_mixer.style = "height: 17.5px; background: rgb(" + rc.red + "," + rc.green + "," + rc.blue + ");";
 	}
 	
 	Delete()
 	{
 		var rc = this.parentNode.parentNode.parentNode.parentNode.regionController;
-		Http_MakeRequest("/region?delete-" + rc.regionIndex);
+		Http_MakeRequest("/api?region-delete:" + rc.regionIndex);
 		
 		tab_regions.removeChild(rc.div);
 
@@ -224,5 +242,133 @@ class RegionController
 		tab_regions.removeChild(this.div);
 
 		regionControllers.splice(regionControllers.indexOf(this), 1);
+	}
+}
+
+class AnchorController
+{
+	constructor(anchorIndex, name, index)
+	{
+		this.anchor = anchorIndex;
+		
+		this.div = document.createElement("div");
+		this.div.setAttribute("class", "anchor");
+		this.div.anchorController = this;
+		
+		var table = document.createElement("table");
+		table.setAttribute("class", "anchor table");
+		
+		// button_Delete
+		this.button_Delete = document.createElement("button");
+		this.button_Delete.innerHTML = "X";
+		this.button_Delete.onclick = this.Delete;
+		this.button_Delete.setAttribute("class", "anchor delete_button");
+
+		// header
+		var tr_header = document.createElement("tr");
+		tr_header.setAttribute("class", "anchor header");
+		this.td_label_header = document.createElement("td");
+		this.td_label_header.innerHTML = "Anchor " + anchorIndex;
+		this.td_label_header.style="font-weight:bold; padding-top: 5px;";
+		var td_header_delete_button = document.createElement("td");
+		td_header_delete_button.style = "text-align:right;";
+		td_header_delete_button.appendChild(this.button_Delete);
+		tr_header.appendChild(this.td_label_header);
+		tr_header.appendChild(td_header_delete_button);
+		table.appendChild(tr_header);
+		
+		// textBox_Name
+		var tr_textBox_Name = document.createElement("tr");
+		var td_label_textBox_Name = document.createElement("td");
+		td_label_textBox_Name.innerHTML = "Name";
+		var td_textBox_Name = document.createElement("td");
+		this.textBox_Name = document.createElement("input");
+		this.textBox_Name.setAttribute("type", "text");
+		this.textBox_Name.value = name;
+		this.textBox_Name.onchange = this.Update;
+		td_textBox_Name.appendChild(this.textBox_Name);
+		tr_textBox_Name.appendChild(td_label_textBox_Name);
+		tr_textBox_Name.appendChild(td_textBox_Name);
+		table.appendChild(tr_textBox_Name);
+		
+		// dropdown_Index
+		var tr_dropdown_Index = document.createElement("tr");
+		var td_label_dropdown_Index = document.createElement("td");
+		td_label_dropdown_Index.innerHTML = "Index";
+		var td_dropdown_Index = document.createElement("td");
+		this.dropdown_Index = document.createElement("select");
+		for (i = 0; i < num_leds; i++)
+		{
+			var index_option = document.createElement("option");
+			index_option.innerHTML = i;
+			this.dropdown_Index.appendChild(index_option);
+		}
+		this.dropdown_Index.selectedIndex = index;
+		this.dropdown_Index.onchange = this.Update;
+		td_dropdown_Index.appendChild(this.dropdown_Index);
+		tr_dropdown_Index.appendChild(td_label_dropdown_Index);
+		tr_dropdown_Index.appendChild(td_dropdown_Index);
+		table.appendChild(tr_dropdown_Index);
+		
+		this.div.appendChild(table);
+	}
+	
+	get anchorIndex()
+	{
+		return this.anchor;
+	}
+	
+	set anchorIndex(value)
+	{
+		this.anchor = value;
+		this.td_label_header.innerHTML = "Anchor " + value;
+	}
+	
+	get name()
+	{
+		return this.textBox_Name.value;
+	}
+	
+	set name(value)
+	{
+		this.textBox_Name.value = value;
+	}
+	
+	get index()
+	{
+		return this.dropdown_Index.selectedIndex;
+	}
+	
+	set index(value)
+	{
+		this.dropdown_Index.selectedIndex = value;
+	}
+	
+	Create()
+	{
+		Http_MakeRequest("/api?anchor-create:" + this.name + "," + this.index);
+	}
+	
+	Update()
+	{
+		var ac = this.parentNode.parentNode.parentNode.parentNode.anchorController;
+		Http_MakeRequest("/api?anchor-update:" + ac.anchorIndex + "," + ac.name + "," + ac.index);
+	}
+	
+	Delete()
+	{
+		var ac = this.parentNode.parentNode.parentNode.parentNode.anchorController;
+		Http_MakeRequest("/api?anchor-delete:" + ac.anchorIndex);
+		
+		tab_anchors.removeChild(ac.div);
+		
+		anchorControllers.splice(anchorControllers.indexOf(ac), 1);
+	}
+	
+	Remove()
+	{		
+		tab_anchors.removeChild(this.div);
+
+		anchorControllers.splice(anchorControllers.indexOf(this), 1);
 	}
 }

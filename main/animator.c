@@ -32,21 +32,28 @@ void Animator_Start(void)
 	runAnimation = true;
 	while (runAnimation)
 	{
-		if (global_config.strip_on == false) continue;
 
-		for (i = 0; i < REGION_COUNT; i++)
+		if (global_config.strip_on == true)
 		{
-			const region_t * regionData = Region_GetData(i);
-			if (regionData == NULL)
+			for (i = 0; i < REGION_COUNT; i++)
 			{
-				continue;
+				const region_t * regionData = Region_GetData(i);
+				if (regionData == NULL)
+				{
+					continue;
+				}
+				else
+				{
+					SHADERS[regionData->shaderIndex]->nextFrame(regionData);
+				}
 			}
-			else
-			{
-				SHADERS[regionData->shaderIndex]->nextFrame(regionData);
-			}
+			Strip_Buffer_Push();
 		}
-		Strip_Buffer_Push();
+		else
+		{
+			Strip_Buffer_SetAll(COLOUR_OFF);
+			Strip_Buffer_Push();
+		}
 		vTaskDelay(ANIMATION_DELAY_MS / portTICK_PERIOD_MS);
 	}
 }

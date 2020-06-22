@@ -5,13 +5,18 @@ var tab_regions;
 var tab_anchors;
 
 var regionControllers = [];
+var anchorControllers = [];
 
 var shaderNames = [];
 
 var max_regions = 0;
+var max_anchors = 0;
 var max_shaders = 0;
 
+var num_leds = 0;
+
 var region_load_progress = 0;
+var anchor_load_progress = 0;
 
 function Page_OnLoad()
 {
@@ -21,8 +26,10 @@ function Page_OnLoad()
 	tab_regions = document.getElementById("tab_regions");
 	tab_anchors = document.getElementById("tab_anchors");
 	
-	Http_MakeRequest("/shader?get_shaders");
-	Http_MakeRequest("/region?get_max");
+	Http_MakeRequest("/api?shader-get_names");
+	Http_MakeRequest("/api?config-num_leds");
+	Http_MakeRequest("/api?region-get_max");
+	Http_MakeRequest("/api?anchor-get_max");
 	
 	document.getElementById("tab_button_controls").click();
 }
@@ -38,10 +45,7 @@ function Http_Response_Region(response)
 			max_regions = response[2];
 			region_load_progress = 0;
 			
-			for (i = 0; i < max_regions; i++)
-			{
-				Http_MakeRequest("/region?get-" + i);
-			}
+			Http_MakeRequest("api?region-get:0");
 			break;
 		case "get":
 			region_load_progress++;
@@ -53,13 +57,14 @@ function Http_Response_Region(response)
 			{
 				var prog = (region_load_progress / max_regions) * 100;
 				document.getElementById("regions_button_refresh").style = "background: linear-gradient(90deg, rgb(90,130,150) " + prog + "%, rgb(80,80,80) " + prog + "%);";
-			}
-			if (response[2] != "null")
-			{
-				var rc = new RegionController(response[2], response[3], response[4], response[5], response[6], response[7], response[8]);
-				regionControllers.push(rc);
-				tab_regions.appendChild(rc.div);
-				rc.div.id = "region-" + response[2];
+				if (response[2] != "null")
+				{
+					var rc = new RegionController(response[2], response[3], response[4], response[5], response[6], response[7], response[8]);
+					regionControllers.push(rc);
+					tab_regions.appendChild(rc.div);
+					rc.div.id = "region-" + response[2];
+				}
+				Http_MakeRequest("api?region-get:" + region_load_progress);
 			}
 			break;
 		case "create":
@@ -74,6 +79,7 @@ function Http_Response_Region(response)
 					document.getElementById("regions_button_add").disabled = false;
 				}
 			}
+			break;
 		default:
 			break;
 	}
@@ -83,13 +89,74 @@ function Http_Response_Shader(response)
 {
 	switch (response[1])
 	{
-		case "get_shaders":
+		case "get_names":
 			max_shaders = response[2];
 			
 			for (i = 0; i < max_shaders; i++)
 			{
 				shaderNames.push(response[i + 3]);
 			}
+			break;
+		default:
+			break;
+	}
+}
+
+function Http_Response_Config(response)
+{
+	switch (response[1])
+	{
+		case "num_leds":
+			num_leds = response[2];
+			break;
+		default:
+			break;
+	}
+}
+
+function Http_Response_Anchor(response)
+{
+	switch (response[1])
+	{
+		case "get_max":
+			max_anchors = response[2];
+			anchor_load_progress = 0;
+			
+			Http_MakeRequest("api?anchor-get:0");
+			break;
+		case "get":
+			anchor_load_progress++;
+			if (anchor_load_progress == max_anchors)
+			{
+				document.getElementById("anchors_button_refresh").style = "";
+			}
+			else
+			{
+				var prog = (anchor_load_progress / max_anchors) * 100;
+				document.getElementById("anchors_button_refresh").style = "background: linear-gradient(90deg, rgb(90,130,150) " + prog + "%, rgb(80,80,80) " + prog + "%);";
+				if (response[2] != "null")
+				{
+					var ac = new AnchorController(response[2], response[3], response[4]);
+					anchorControllers.push(ac);
+					tab_anchors.appendChild(ac.div);
+					ac.div.id = "anchor-" + response[2];
+				}
+				Http_MakeRequest("api?anchor-get:" + anchor_load_progress);
+			}
+			break;
+		case "create":
+			for (i = 0; i < anchorControllers.length; i++)
+			{
+				if (anchorControllers[i].anchorIndex === null)
+				{
+					console.log("Updated anchor index of anchor controller " + i + " to " + response[2]); 
+					anchorControllers[i].anchorIndex = response[2];
+					anchorControllers[i].div.id = "anchor-" + response[2];
+					tab_anchors.appendChild(anchorControllers[i].div);
+					document.getElementById("anchors_button_add").disabled = false;
+				}
+			}
+			break;
 		default:
 			break;
 	}
@@ -107,6 +174,12 @@ function Http_RequestEventListener()
 			break;
 		case "shader":
 			Http_Response_Shader(response);
+			break;
+		case "config":
+			Http_Response_Config(response);
+			break;
+		case "anchor":
+			Http_Response_Anchor(response);
 			break;
 		default:
 			break;
@@ -152,7 +225,7 @@ function TabControls_Button_OnClick(sender, name)
  ****************************************************************/
 function Controls_Toggle_Power_OnClick()
 {
-	Http_MakeRequest("config?toggle_power");
+	Http_MakeRequest("/api?config-toggle_power");
 }
 
 /****************************************************************
@@ -180,7 +253,7 @@ function Regions_Refresh_OnClick()
 		regionControllers[0].Remove();
 	}
 	
-	Http_MakeRequest("/region?get_max");
+	Http_MakeRequest("/api?region-get_max");
 }
 
 function Regions_Clear_OnClick()
@@ -191,5 +264,44 @@ function Regions_Clear_OnClick()
 		regionControllers[0].Remove();
 	}
 	
-	Http_MakeRequest("/region?clear");
+	Http_MakeRequest("/api?region-clear");
+}
+
+/****************************************************************
+ * Anchors
+ ****************************************************************/
+function Anchors_Add_OnClick()
+{
+	if (anchorControllers.length < max_anchors)
+	{
+		var ac = new AnchorController(null, "-", 0);
+		
+		ac.Create();
+		
+		anchorControllers.push(ac);
+		
+		document.getElementById("anchors_button_add").disabled = true;
+	}
+}
+
+function Anchors_Refresh_OnClick()
+{
+	var len = anchorControllers.length;
+	for (i = 0; i < len; i++)
+	{
+		anchorControllers[0].Remove();
+	}
+	
+	Http_MakeRequest("/api?anchor-get_max");
+}
+
+function Anchors_Clear_OnClick()
+{
+	var len = anchorControllers.length;
+	for (i = 0; i < len; i++)
+	{
+		anchorControllers[0].Remove();
+	}
+	
+	Http_MakeRequest("/api?anchor-clear");
 }

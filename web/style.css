@@ -60,7 +60,7 @@ select {
 }
 
 .region.table {
-	background: linear-gradient(0deg, rgb(53,53,53) 80%, rgb(80,80,80) 80%);
+	background: linear-gradient(0deg, rgb(53,53,53) 83%, rgb(80,80,80) 83%);
 	margin: 20px;
 	margin-left: 10px;
 	padding: 5px;
@@ -95,4 +95,27 @@ select {
 }
 .region.slider.blue {
 	background: linear-gradient(to right, rgb(0,0,0) , rgb(0,0,255) );
+}
+
+.anchor.table {
+	background: linear-gradient(0deg, rgb(53,53,53) 63%, rgb(80,80,80) 63%);
+	margin: 20px;
+	margin-left: 10px;
+	padding: 5px;
+	border-radius: 5px;
+	box-shadow: 0px 0px 22px 0px rgba(0,0,0,0.5);
+	max-width: 500px;
+	width: 95%;
+}
+.anchor.header {
+	height: 40px;
+	vertical-align: top;
+}
+.anchor.delete_button {
+	background-color: rgb(32,33,36);
+	width: 25px;
+	height: 25px;
+	border-radius: 100px;
+	border: none;
+	color: rgb(255,255,255);
 }

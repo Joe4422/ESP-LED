@@ -10,9 +10,9 @@
 /****************************************************************
  * Defines, consts
  ****************************************************************/
-extern const char* WEB_INDEX_HTML;
+extern const char* WEB_CLASSES_JS;
 
-extern const char* WEB_REGIONCONTROLLER_JS;
+extern const char* WEB_INDEX_HTML;
 
 extern const char* WEB_SCRIPTS_JS;
 

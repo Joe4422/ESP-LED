@@ -6,41 +6,7 @@
 /****************************************************************
  * Defines, consts
  ****************************************************************/
-const char* WEB_INDEX_HTML = "<!DOCTYPE html> \n \
-<html> \n \
-	<head> \n \
-		<meta charset=\"UTF-8\"> \n \
-		<title>ESP-IDF</title> \n \
-		<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no\"> \n \
-		<script src=\"scripts.js\"></script> \n \
-		<script src=\"RegionController.js\"></script> \n \
-		 \n \
-		<link rel=\"stylesheet\" href=\"style.css\" type=\"text/css\"> \n \
-	</head> \n \
-	<body> \n \
-		<div class=\"tab bar\"> \n \
-			<button class=\"tab button\" id=\"tab_button_controls\" onclick=\"TabControls_Button_OnClick(this, 'tab_controls')\">Controls</button> \n \
-			<button class=\"tab button\" id=\"tab_button_regions\" onclick=\"TabControls_Button_OnClick(this, 'tab_regions')\">Regions</button> \n \
-			<button class=\"tab button\" id=\"tab_button_anchors\" onclick=\"TabControls_Button_OnClick(this, 'tab_anchors')\">Anchors</button> \n \
-		</div> \n \
-		<div class=\"tab container\"> \n \
-			<div class=\"tab content\" id=\"tab_controls\"> \n \
-				<button id=\"controls_button_toggle_power\" class=\"tab content_button\" onclick=\"Controls_Toggle_Power_OnClick()\">Toggle Power</button> \n \
-			</div> \n \
-			<div class=\"tab content\" id=\"tab_regions\"> \n \
-				<button id=\"regions_button_refresh\" class=\"tab content_button\" onclick=\"Regions_Refresh_OnClick()\">Refresh</button> \n \
-				<button id=\"regions_button_add\" class=\"tab content_button\" onclick=\"Regions_Add_OnClick()\">Add</button> \n \
-				<button id=\"regions_button_clear\" class=\"tab content_button\" onclick=\"Regions_Clear_OnClick()\">Clear</button> \n \
-			</div> \n \
-			<div class=\"tab content\" id=\"tab_anchors\"> \n \
-			 \n \
-			</div> \n \
-		</div> \n \
-		<script>Page_OnLoad();</script> \n \
-	</body> \n \
-</html> \n";
-
-const char* WEB_REGIONCONTROLLER_JS = "class RegionController \n \
+const char* WEB_CLASSES_JS = "class RegionController \n \
 { \n \
 	constructor(regionIndex, startIndex, endIndex, shader, red, green, blue) \n \
 	{ \n \
@@ -94,7 +60,7 @@ const char* WEB_REGIONCONTROLLER_JS = "class RegionController \n \
 		var td_textBox_End = document.createElement(\"td\"); \n \
 		this.textBox_End = document.createElement(\"input\"); \n \
 		this.textBox_End.setAttribute(\"type\", \"text\"); \n \
-		this.textBox_End.placeholder = \"149\"; \n \
+		this.textBox_End.placeholder = num_leds; \n \
 		this.textBox_End.value = endIndex; \n \
 		this.textBox_End.onchange = this.Update; \n \
 		td_textBox_End.appendChild(this.textBox_End); \n \
@@ -132,6 +98,7 @@ const char* WEB_REGIONCONTROLLER_JS = "class RegionController \n \
 		this.slider_Red.max = 255; \n \
 		this.slider_Red.value = red; \n \
 		this.slider_Red.onchange = this.Update; \n \
+		this.slider_Red.oninput = this.UpdateColour; \n \
 		this.slider_Red.setAttribute(\"class\", \"region slider red\"); \n \
 		td_slider_Red.appendChild(this.slider_Red); \n \
 		tr_slider_Red.appendChild(td_label_slider_Red); \n \
@@ -149,6 +116,7 @@ const char* WEB_REGIONCONTROLLER_JS = "class RegionController \n \
 		this.slider_Green.max = 255; \n \
 		this.slider_Green.value = green; \n \
 		this.slider_Green.onchange = this.Update; \n \
+		this.slider_Green.oninput = this.UpdateColour; \n \
 		this.slider_Green.setAttribute(\"class\", \"region slider green\"); \n \
 		td_slider_Green.appendChild(this.slider_Green); \n \
 		tr_slider_Green.appendChild(td_label_slider_Green); \n \
@@ -166,12 +134,22 @@ const char* WEB_REGIONCONTROLLER_JS = "class RegionController \n \
 		this.slider_Blue.max = 255; \n \
 		this.slider_Blue.value = blue; \n \
 		this.slider_Blue.onchange = this.Update; \n \
-		this.slider_Blue.setAttribute(\"class\", \"region slider blue\");		 \n \
+		this.slider_Blue.oninput = this.UpdateColour; \n \
+		this.slider_Blue.setAttribute(\"class\", \"region slider blue\"); \n \
 		td_slider_Blue.appendChild(this.slider_Blue); \n \
 		tr_slider_Blue.appendChild(td_label_slider_Blue); \n \
 		tr_slider_Blue.appendChild(td_slider_Blue); \n \
 		table.appendChild(tr_slider_Blue); \n \
-				 \n \
+ \n \
+		// mixer \n \
+		var tr_mixer = document.createElement(\"tr\"); \n \
+		var td_label_mixer = document.createElement(\"td\"); \n \
+		this.td_mixer = document.createElement(\"td\"); \n \
+		this.td_mixer.style = \"height: 17.5px; background: rgb(\" + this.red + \",\" + this.green + \",\" + this.blue + \");\"; \n \
+		tr_mixer.appendChild(td_label_mixer); \n \
+		tr_mixer.appendChild(this.td_mixer); \n \
+		table.appendChild(tr_mixer); \n \
+		 \n \
 		this.div.appendChild(table); \n \
 	} \n \
 	 \n \
@@ -242,19 +220,25 @@ const char* WEB_REGIONCONTROLLER_JS = "class RegionController \n \
 	 \n \
 	Create() \n \
 	{ \n \
-		Http_MakeRequest(\"/region?create-\" + this.startIndex + \"-\" + this.endIndex + \"-\" + this.shader + \"-\" + this.red + \"-\" + this.green + \"-\" + this.blue); \n \
+		Http_MakeRequest(\"/api?region-create:\" + this.startIndex + \",\" + this.endIndex + \",\" + this.shader + \",\" + this.red + \",\" + this.green + \",\" + this.blue); \n \
 	} \n \
 	 \n \
 	Update() \n \
 	{ \n \
 		var rc = this.parentNode.parentNode.parentNode.parentNode.regionController; \n \
-		Http_MakeRequest(\"/region?update-\" + rc.regionIndex + \"-\" + rc.startIndex + \"-\" + rc.endIndex + \"-\" + rc.shader + \"-\" + rc.red + \"-\" + rc.green + \"-\" + rc.blue); \n \
+		Http_MakeRequest(\"/api?region-update:\" + rc.regionIndex + \",\" + rc.startIndex + \",\" + rc.endIndex + \",\" + rc.shader + \",\" + rc.red + \",\" + rc.green + \",\" + rc.blue); \n \
+	} \n \
+	 \n \
+	UpdateColour() \n \
+	{ \n \
+		var rc = this.parentNode.parentNode.parentNode.parentNode.regionController; \n \
+		rc.td_mixer.style = \"height: 17.5px; background: rgb(\" + rc.red + \",\" + rc.green + \",\" + rc.blue + \");\"; \n \
 	} \n \
 	 \n \
 	Delete() \n \
 	{ \n \
 		var rc = this.parentNode.parentNode.parentNode.parentNode.regionController; \n \
-		Http_MakeRequest(\"/region?delete-\" + rc.regionIndex); \n \
+		Http_MakeRequest(\"/api?region-delete:\" + rc.regionIndex); \n \
 		 \n \
 		tab_regions.removeChild(rc.div); \n \
  \n \
@@ -267,7 +251,171 @@ const char* WEB_REGIONCONTROLLER_JS = "class RegionController \n \
  \n \
 		regionControllers.splice(regionControllers.indexOf(this), 1); \n \
 	} \n \
+} \n \
+ \n \
+class AnchorController \n \
+{ \n \
+	constructor(anchorIndex, name, index) \n \
+	{ \n \
+		this.anchor = anchorIndex; \n \
+		 \n \
+		this.div = document.createElement(\"div\"); \n \
+		this.div.setAttribute(\"class\", \"anchor\"); \n \
+		this.div.anchorController = this; \n \
+		 \n \
+		var table = document.createElement(\"table\"); \n \
+		table.setAttribute(\"class\", \"anchor table\"); \n \
+		 \n \
+		// button_Delete \n \
+		this.button_Delete = document.createElement(\"button\"); \n \
+		this.button_Delete.innerHTML = \"X\"; \n \
+		this.button_Delete.onclick = this.Delete; \n \
+		this.button_Delete.setAttribute(\"class\", \"anchor delete_button\"); \n \
+ \n \
+		// header \n \
+		var tr_header = document.createElement(\"tr\"); \n \
+		tr_header.setAttribute(\"class\", \"anchor header\"); \n \
+		this.td_label_header = document.createElement(\"td\"); \n \
+		this.td_label_header.innerHTML = \"Anchor \" + anchorIndex; \n \
+		this.td_label_header.style=\"font-weight:bold; padding-top: 5px;\"; \n \
+		var td_header_delete_button = document.createElement(\"td\"); \n \
+		td_header_delete_button.style = \"text-align:right;\"; \n \
+		td_header_delete_button.appendChild(this.button_Delete); \n \
+		tr_header.appendChild(this.td_label_header); \n \
+		tr_header.appendChild(td_header_delete_button); \n \
+		table.appendChild(tr_header); \n \
+		 \n \
+		// textBox_Name \n \
+		var tr_textBox_Name = document.createElement(\"tr\"); \n \
+		var td_label_textBox_Name = document.createElement(\"td\"); \n \
+		td_label_textBox_Name.innerHTML = \"Name\"; \n \
+		var td_textBox_Name = document.createElement(\"td\"); \n \
+		this.textBox_Name = document.createElement(\"input\"); \n \
+		this.textBox_Name.setAttribute(\"type\", \"text\"); \n \
+		this.textBox_Name.value = name; \n \
+		this.textBox_Name.onchange = this.Update; \n \
+		td_textBox_Name.appendChild(this.textBox_Name); \n \
+		tr_textBox_Name.appendChild(td_label_textBox_Name); \n \
+		tr_textBox_Name.appendChild(td_textBox_Name); \n \
+		table.appendChild(tr_textBox_Name); \n \
+		 \n \
+		// dropdown_Index \n \
+		var tr_dropdown_Index = document.createElement(\"tr\"); \n \
+		var td_label_dropdown_Index = document.createElement(\"td\"); \n \
+		td_label_dropdown_Index.innerHTML = \"Index\"; \n \
+		var td_dropdown_Index = document.createElement(\"td\"); \n \
+		this.dropdown_Index = document.createElement(\"select\"); \n \
+		for (i = 0; i < num_leds; i++) \n \
+		{ \n \
+			var index_option = document.createElement(\"option\"); \n \
+			index_option.innerHTML = i; \n \
+			this.dropdown_Index.appendChild(index_option); \n \
+		} \n \
+		this.dropdown_Index.selectedIndex = index; \n \
+		this.dropdown_Index.onchange = this.Update; \n \
+		td_dropdown_Index.appendChild(this.dropdown_Index); \n \
+		tr_dropdown_Index.appendChild(td_label_dropdown_Index); \n \
+		tr_dropdown_Index.appendChild(td_dropdown_Index); \n \
+		table.appendChild(tr_dropdown_Index); \n \
+		 \n \
+		this.div.appendChild(table); \n \
+	} \n \
+	 \n \
+	get anchorIndex() \n \
+	{ \n \
+		return this.anchor; \n \
+	} \n \
+	 \n \
+	set anchorIndex(value) \n \
+	{ \n \
+		this.anchor = value; \n \
+		this.td_label_header.innerHTML = \"Anchor \" + value; \n \
+	} \n \
+	 \n \
+	get name() \n \
+	{ \n \
+		return this.textBox_Name.value; \n \
+	} \n \
+	 \n \
+	set name(value) \n \
+	{ \n \
+		this.textBox_Name.value = value; \n \
+	} \n \
+	 \n \
+	get index() \n \
+	{ \n \
+		return this.dropdown_Index.selectedIndex; \n \
+	} \n \
+	 \n \
+	set index(value) \n \
+	{ \n \
+		this.dropdown_Index.selectedIndex = value; \n \
+	} \n \
+	 \n \
+	Create() \n \
+	{ \n \
+		Http_MakeRequest(\"/api?anchor-create:\" + this.name + \",\" + this.index); \n \
+	} \n \
+	 \n \
+	Update() \n \
+	{ \n \
+		var ac = this.parentNode.parentNode.parentNode.parentNode.anchorController; \n \
+		Http_MakeRequest(\"/api?anchor-update:\" + ac.anchorIndex + \",\" + ac.name + \",\" + ac.index); \n \
+	} \n \
+	 \n \
+	Delete() \n \
+	{ \n \
+		var ac = this.parentNode.parentNode.parentNode.parentNode.anchorController; \n \
+		Http_MakeRequest(\"/api?anchor-delete:\" + ac.anchorIndex); \n \
+		 \n \
+		tab_anchors.removeChild(ac.div); \n \
+		 \n \
+		anchorControllers.splice(anchorControllers.indexOf(ac), 1); \n \
+	} \n \
+	 \n \
+	Remove() \n \
+	{		 \n \
+		tab_anchors.removeChild(this.div); \n \
+ \n \
+		anchorControllers.splice(anchorControllers.indexOf(this), 1); \n \
+	} \n \
 } \n";
+
+const char* WEB_INDEX_HTML = "<!DOCTYPE html> \n \
+<html> \n \
+	<head> \n \
+		<meta charset=\"UTF-8\"> \n \
+		<title>ESP-IDF</title> \n \
+		<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no\"> \n \
+		<script src=\"scripts.js\"></script> \n \
+		<script src=\"classes.js\"></script> \n \
+		 \n \
+		<link rel=\"stylesheet\" href=\"style.css\" type=\"text/css\"> \n \
+	</head> \n \
+	<body> \n \
+		<div class=\"tab bar\"> \n \
+			<button class=\"tab button\" id=\"tab_button_controls\" onclick=\"TabControls_Button_OnClick(this, 'tab_controls')\">Controls</button> \n \
+			<button class=\"tab button\" id=\"tab_button_regions\" onclick=\"TabControls_Button_OnClick(this, 'tab_regions')\">Regions</button> \n \
+			<button class=\"tab button\" id=\"tab_button_anchors\" onclick=\"TabControls_Button_OnClick(this, 'tab_anchors')\">Anchors</button> \n \
+		</div> \n \
+		<div class=\"tab container\"> \n \
+			<div class=\"tab content\" id=\"tab_controls\"> \n \
+				<button id=\"controls_button_toggle_power\" class=\"tab content_button\" onclick=\"Controls_Toggle_Power_OnClick()\">Toggle Power</button> \n \
+			</div> \n \
+			<div class=\"tab content\" id=\"tab_regions\"> \n \
+				<button id=\"regions_button_refresh\" class=\"tab content_button\" onclick=\"Regions_Refresh_OnClick()\">Refresh</button> \n \
+				<button id=\"regions_button_add\" class=\"tab content_button\" onclick=\"Regions_Add_OnClick()\">Add</button> \n \
+				<button id=\"regions_button_clear\" class=\"tab content_button\" onclick=\"Regions_Clear_OnClick()\">Clear</button> \n \
+			</div> \n \
+			<div class=\"tab content\" id=\"tab_anchors\"> \n \
+				<button id=\"anchors_button_refresh\" class=\"tab content_button\" onclick=\"Anchors_Refresh_OnClick()\">Refresh</button> \n \
+				<button id=\"anchors_button_add\" class=\"tab content_button\" onclick=\"Anchors_Add_OnClick()\">Add</button> \n \
+				<button id=\"anchors_button_clear\" class=\"tab content_button\" onclick=\"Anchors_Clear_OnClick()\">Clear</button> \n \
+			</div> \n \
+		</div> \n \
+		<script>Page_OnLoad();</script> \n \
+	</body> \n \
+</html> \n";
 
 const char* WEB_SCRIPTS_JS = "var tab_control_regions; \n \
 var tab_control_anchors; \n \
@@ -276,13 +424,18 @@ var tab_regions; \n \
 var tab_anchors; \n \
  \n \
 var regionControllers = []; \n \
+var anchorControllers = []; \n \
  \n \
 var shaderNames = []; \n \
  \n \
 var max_regions = 0; \n \
+var max_anchors = 0; \n \
 var max_shaders = 0; \n \
  \n \
+var num_leds = 0; \n \
+ \n \
 var region_load_progress = 0; \n \
+var anchor_load_progress = 0; \n \
  \n \
 function Page_OnLoad() \n \
 { \n \
@@ -292,8 +445,10 @@ function Page_OnLoad() \n \
 	tab_regions = document.getElementById(\"tab_regions\"); \n \
 	tab_anchors = document.getElementById(\"tab_anchors\"); \n \
 	 \n \
-	Http_MakeRequest(\"/shader?get_shaders\"); \n \
-	Http_MakeRequest(\"/region?get_max\"); \n \
+	Http_MakeRequest(\"/api?shader-get_names\"); \n \
+	Http_MakeRequest(\"/api?config-num_leds\"); \n \
+	Http_MakeRequest(\"/api?region-get_max\"); \n \
+	Http_MakeRequest(\"/api?anchor-get_max\"); \n \
 	 \n \
 	document.getElementById(\"tab_button_controls\").click(); \n \
 } \n \
@@ -309,10 +464,7 @@ function Http_Response_Region(response) \n \
 			max_regions = response[2]; \n \
 			region_load_progress = 0; \n \
 			 \n \
-			for (i = 0; i < max_regions; i++) \n \
-			{ \n \
-				Http_MakeRequest(\"/region?get-\" + i); \n \
-			} \n \
+			Http_MakeRequest(\"api?region-get:0\"); \n \
 			break; \n \
 		case \"get\": \n \
 			region_load_progress++; \n \
@@ -324,13 +476,14 @@ function Http_Response_Region(response) \n \
 			{ \n \
 				var prog = (region_load_progress / max_regions) * 100; \n \
 				document.getElementById(\"regions_button_refresh\").style = \"background: linear-gradient(90deg, rgb(90,130,150) \" + prog + \"%, rgb(80,80,80) \" + prog + \"%);\"; \n \
-			} \n \
-			if (response[2] != \"null\") \n \
-			{ \n \
-				var rc = new RegionController(response[2], response[3], response[4], response[5], response[6], response[7], response[8]); \n \
-				regionControllers.push(rc); \n \
-				tab_regions.appendChild(rc.div); \n \
-				rc.div.id = \"region-\" + response[2]; \n \
+				if (response[2] != \"null\") \n \
+				{ \n \
+					var rc = new RegionController(response[2], response[3], response[4], response[5], response[6], response[7], response[8]); \n \
+					regionControllers.push(rc); \n \
+					tab_regions.appendChild(rc.div); \n \
+					rc.div.id = \"region-\" + response[2]; \n \
+				} \n \
+				Http_MakeRequest(\"api?region-get:\" + region_load_progress); \n \
 			} \n \
 			break; \n \
 		case \"create\": \n \
@@ -345,6 +498,7 @@ function Http_Response_Region(response) \n \
 					document.getElementById(\"regions_button_add\").disabled = false; \n \
 				} \n \
 			} \n \
+			break; \n \
 		default: \n \
 			break; \n \
 	} \n \
@@ -354,13 +508,74 @@ function Http_Response_Shader(response) \n \
 { \n \
 	switch (response[1]) \n \
 	{ \n \
-		case \"get_shaders\": \n \
+		case \"get_names\": \n \
 			max_shaders = response[2]; \n \
 			 \n \
 			for (i = 0; i < max_shaders; i++) \n \
 			{ \n \
 				shaderNames.push(response[i + 3]); \n \
 			} \n \
+			break; \n \
+		default: \n \
+			break; \n \
+	} \n \
+} \n \
+ \n \
+function Http_Response_Config(response) \n \
+{ \n \
+	switch (response[1]) \n \
+	{ \n \
+		case \"num_leds\": \n \
+			num_leds = response[2]; \n \
+			break; \n \
+		default: \n \
+			break; \n \
+	} \n \
+} \n \
+ \n \
+function Http_Response_Anchor(response) \n \
+{ \n \
+	switch (response[1]) \n \
+	{ \n \
+		case \"get_max\": \n \
+			max_anchors = response[2]; \n \
+			anchor_load_progress = 0; \n \
+			 \n \
+			Http_MakeRequest(\"api?anchor-get:0\"); \n \
+			break; \n \
+		case \"get\": \n \
+			anchor_load_progress++; \n \
+			if (anchor_load_progress == max_anchors) \n \
+			{ \n \
+				document.getElementById(\"anchors_button_refresh\").style = \"\"; \n \
+			} \n \
+			else \n \
+			{ \n \
+				var prog = (anchor_load_progress / max_anchors) * 100; \n \
+				document.getElementById(\"anchors_button_refresh\").style = \"background: linear-gradient(90deg, rgb(90,130,150) \" + prog + \"%, rgb(80,80,80) \" + prog + \"%);\"; \n \
+				if (response[2] != \"null\") \n \
+				{ \n \
+					var ac = new AnchorController(response[2], response[3], response[4]); \n \
+					anchorControllers.push(ac); \n \
+					tab_anchors.appendChild(ac.div); \n \
+					ac.div.id = \"anchor-\" + response[2]; \n \
+				} \n \
+				Http_MakeRequest(\"api?anchor-get:\" + anchor_load_progress); \n \
+			} \n \
+			break; \n \
+		case \"create\": \n \
+			for (i = 0; i < anchorControllers.length; i++) \n \
+			{ \n \
+				if (anchorControllers[i].anchorIndex === null) \n \
+				{ \n \
+					console.log(\"Updated anchor index of anchor controller \" + i + \" to \" + response[2]);  \n \
+					anchorControllers[i].anchorIndex = response[2]; \n \
+					anchorControllers[i].div.id = \"anchor-\" + response[2]; \n \
+					tab_anchors.appendChild(anchorControllers[i].div); \n \
+					document.getElementById(\"anchors_button_add\").disabled = false; \n \
+				} \n \
+			} \n \
+			break; \n \
 		default: \n \
 			break; \n \
 	} \n \
@@ -378,6 +593,12 @@ function Http_RequestEventListener() \n \
 			break; \n \
 		case \"shader\": \n \
 			Http_Response_Shader(response); \n \
+			break; \n \
+		case \"config\": \n \
+			Http_Response_Config(response); \n \
+			break; \n \
+		case \"anchor\": \n \
+			Http_Response_Anchor(response); \n \
 			break; \n \
 		default: \n \
 			break; \n \
@@ -423,7 +644,7 @@ function TabControls_Button_OnClick(sender, name) \n \
  ****************************************************************/ \n \
 function Controls_Toggle_Power_OnClick() \n \
 { \n \
-	Http_MakeRequest(\"config?toggle_power\"); \n \
+	Http_MakeRequest(\"/api?config-toggle_power\"); \n \
 } \n \
  \n \
 /**************************************************************** \n \
@@ -451,7 +672,7 @@ function Regions_Refresh_OnClick() \n \
 		regionControllers[0].Remove(); \n \
 	} \n \
 	 \n \
-	Http_MakeRequest(\"/region?get_max\"); \n \
+	Http_MakeRequest(\"/api?region-get_max\"); \n \
 } \n \
  \n \
 function Regions_Clear_OnClick() \n \
@@ -462,7 +683,46 @@ function Regions_Clear_OnClick() \n \
 		regionControllers[0].Remove(); \n \
 	} \n \
 	 \n \
-	Http_MakeRequest(\"/region?clear\"); \n \
+	Http_MakeRequest(\"/api?region-clear\"); \n \
+} \n \
+ \n \
+/**************************************************************** \n \
+ * Anchors \n \
+ ****************************************************************/ \n \
+function Anchors_Add_OnClick() \n \
+{ \n \
+	if (anchorControllers.length < max_anchors) \n \
+	{ \n \
+		var ac = new AnchorController(null, \"-\", 0); \n \
+		 \n \
+		ac.Create(); \n \
+		 \n \
+		anchorControllers.push(ac); \n \
+		 \n \
+		document.getElementById(\"anchors_button_add\").disabled = true; \n \
+	} \n \
+} \n \
+ \n \
+function Anchors_Refresh_OnClick() \n \
+{ \n \
+	var len = anchorControllers.length; \n \
+	for (i = 0; i < len; i++) \n \
+	{ \n \
+		anchorControllers[0].Remove(); \n \
+	} \n \
+	 \n \
+	Http_MakeRequest(\"/api?anchor-get_max\"); \n \
+} \n \
+ \n \
+function Anchors_Clear_OnClick() \n \
+{ \n \
+	var len = anchorControllers.length; \n \
+	for (i = 0; i < len; i++) \n \
+	{ \n \
+		anchorControllers[0].Remove(); \n \
+	} \n \
+	 \n \
+	Http_MakeRequest(\"/api?anchor-clear\"); \n \
 } \n";
 
 const char* WEB_STYLE_CSS = "body { \n \
@@ -527,7 +787,7 @@ select { \n \
 } \n \
  \n \
 .region.table { \n \
-	background: linear-gradient(0deg, rgb(53,53,53) 80%, rgb(80,80,80) 80%); \n \
+	background: linear-gradient(0deg, rgb(53,53,53) 83%, rgb(80,80,80) 83%); \n \
 	margin: 20px; \n \
 	margin-left: 10px; \n \
 	padding: 5px; \n \
@@ -562,22 +822,45 @@ select { \n \
 } \n \
 .region.slider.blue { \n \
 	background: linear-gradient(to right, rgb(0,0,0) , rgb(0,0,255) ); \n \
+} \n \
+ \n \
+.anchor.table { \n \
+	background: linear-gradient(0deg, rgb(53,53,53) 63%, rgb(80,80,80) 63%); \n \
+	margin: 20px; \n \
+	margin-left: 10px; \n \
+	padding: 5px; \n \
+	border-radius: 5px; \n \
+	box-shadow: 0px 0px 22px 0px rgba(0,0,0,0.5); \n \
+	max-width: 500px; \n \
+	width: 95%; \n \
+} \n \
+.anchor.header { \n \
+	height: 40px; \n \
+	vertical-align: top; \n \
+} \n \
+.anchor.delete_button { \n \
+	background-color: rgb(32,33,36); \n \
+	width: 25px; \n \
+	height: 25px; \n \
+	border-radius: 100px; \n \
+	border: none; \n \
+	color: rgb(255,255,255); \n \
 } \n";
 
 /****************************************************************
  * Function definitions
  ****************************************************************/
+esp_err_t web_classes_js_handler(httpd_req_t *req)
+{
+    httpd_resp_set_type(req, "text/html");
+	httpd_resp_send(req, WEB_CLASSES_JS, strlen(WEB_CLASSES_JS));
+	return ESP_OK;
+}
+
 esp_err_t web_index_html_handler(httpd_req_t *req)
 {
     httpd_resp_set_type(req, "text/html");
 	httpd_resp_send(req, WEB_INDEX_HTML, strlen(WEB_INDEX_HTML));
-	return ESP_OK;
-}
-
-esp_err_t web_regioncontroller_js_handler(httpd_req_t *req)
-{
-    httpd_resp_set_type(req, "text/html");
-	httpd_resp_send(req, WEB_REGIONCONTROLLER_JS, strlen(WEB_REGIONCONTROLLER_JS));
 	return ESP_OK;
 }
 
@@ -597,8 +880,8 @@ esp_err_t web_style_css_handler(httpd_req_t *req)
 
 void WebData_Populate(httpd_handle_t server)
 {
+	httpd_register_uri_handler(server, &(httpd_uri_t){ "/classes.js", .method = HTTP_GET, .handler = web_classes_js_handler, .user_ctx = NULL });
 	httpd_register_uri_handler(server, &(httpd_uri_t){ "/index.html", .method = HTTP_GET, .handler = web_index_html_handler, .user_ctx = NULL });
-	httpd_register_uri_handler(server, &(httpd_uri_t){ "/RegionController.js", .method = HTTP_GET, .handler = web_regioncontroller_js_handler, .user_ctx = NULL });
 	httpd_register_uri_handler(server, &(httpd_uri_t){ "/scripts.js", .method = HTTP_GET, .handler = web_scripts_js_handler, .user_ctx = NULL });
 	httpd_register_uri_handler(server, &(httpd_uri_t){ "/style.css", .method = HTTP_GET, .handler = web_style_css_handler, .user_ctx = NULL });
 }

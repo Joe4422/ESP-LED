@@ -5,7 +5,7 @@
 		<title>ESP-IDF</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 		<script src="scripts.js"></script>
-		<script src="RegionController.js"></script>
+		<script src="classes.js"></script>
 		
 		<link rel="stylesheet" href="style.css" type="text/css">
 	</head>
@@ -25,7 +25,9 @@
 				<button id="regions_button_clear" class="tab content_button" onclick="Regions_Clear_OnClick()">Clear</button>
 			</div>
 			<div class="tab content" id="tab_anchors">
-			
+				<button id="anchors_button_refresh" class="tab content_button" onclick="Anchors_Refresh_OnClick()">Refresh</button>
+				<button id="anchors_button_add" class="tab content_button" onclick="Anchors_Add_OnClick()">Add</button>
+				<button id="anchors_button_clear" class="tab content_button" onclick="Anchors_Clear_OnClick()">Clear</button>
 			</div>
 		</div>
 		<script>Page_OnLoad();</script>

@@ -67,6 +67,17 @@ bool Startup_Init()
 		return false;
 	}
 
+	// Attempt to init anchor manager
+	success = Anchor_Init();
+	// Check if anchor manager init succeeded
+	if (success == false)
+	{
+		// Anchor manager init failed; return false
+		ESP_LOGE(STARTUP_LOG_TAG, "Anchor manager init failed!");
+		SetIndicatorLed(INDICATOR_COLOUR_FAILED);
+		return false;
+	}
+
 	// Attempt to initialise WiFi
     success = WiFi_Init(WIFI_SSID, WIFI_PASSWORD, WIFI_MAX_RETRIES);
     // Check if WiFi init succeeded

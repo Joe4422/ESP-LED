@@ -9,6 +9,7 @@
 
 // Project includes
 #include "region_manager.h"
+#include "anchor_manager.h"
 
 /****************************************************************
  * Function declarations
