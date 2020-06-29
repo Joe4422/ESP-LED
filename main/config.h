@@ -24,11 +24,13 @@ typedef struct config
  ****************************************************************/
 extern const config_t CONFIG_DEFAULT;
 
-#define NUM_LEDS	150
+#define NUM_LEDS				150
 
-#define ANIMATION_DELAY_MS	20
+#define ANIMATION_DELAY_MS		20
 
-#define WIFI_MAX_RETRIES	10
+#define WIFI_MAX_RETRIES		10
+
+#define CONFIG_FORMAT_VERSION	0
 
 /****************************************************************
  * Global variables

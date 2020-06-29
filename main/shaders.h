@@ -23,6 +23,7 @@
  ****************************************************************/
 typedef struct shader
 {
+	void (* init)(const region_t * region);
 	void (* nextFrame)(const region_t * region);
 	char *  name;
 } shader_t;

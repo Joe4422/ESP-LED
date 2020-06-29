@@ -35,6 +35,16 @@ bool Region_Init()
 		return false;
 	}
 
+	ESP_LOGI(REGION_LOG_TAG, "Start");
+	uint8_t i;
+	for (i = 0; i < REGION_COUNT; i++)
+	{
+		if (regions[i] == NULL) continue;
+
+		ESP_LOGI(REGION_LOG_TAG, "%d %d %d (%d %d %d)", regions[i]->start, regions[i]->end, regions[i]->shaderIndex, regions[i]->colour.red, regions[i]->colour.green, regions[i]->colour.blue);
+	}
+	ESP_LOGI(REGION_LOG_TAG, "End");
+
 	return true;
 }
 

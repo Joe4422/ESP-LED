@@ -303,7 +303,7 @@ esp_err_t get_api_handler(httpd_req_t *req)
 	char response_buffer[STRING_BUFFER_SIZE];
 	strcpy(response_buffer, RESPONSE_STATIC_FAILURE);
 
-	ESP_LOGI(WEB_LOG_TAG_API, "Request at %s.", req->uri);
+	ESP_LOGI(WEB_LOG_TAG_API, "Request at a%s.", req->uri);
 
 	// region-create
 	if (CheckUriParameter(req->uri, BASE_API_URI, COMMAND_REGION_BASE COMMAND_PART_SEPARATOR COMMAND_REGION_CREATE))
@@ -318,6 +318,8 @@ esp_err_t get_api_handler(httpd_req_t *req)
 
 				if (Region_Create(region, &index))
 				{
+					//SHADERS[region.shaderIndex]->init(&region);
+
 					sprintf(response_buffer, "region create %d", index);
 
 					ESP_LOGI(WEB_LOG_TAG_API, "Created region from %d to %d with shader %s.", region.start, region.end, SHADERS[region.shaderIndex]->name);
@@ -337,11 +339,11 @@ esp_err_t get_api_handler(httpd_req_t *req)
 			{
 				if (Region_Update(regionIndex, region))
 				{
+					//SHADERS[region.shaderIndex]->init(&region);
+
 					strcpy(response_buffer, RESPONSE_STATIC_SUCCESS);
 
 					ESP_LOGI(WEB_LOG_TAG_API, "Updated region at index %d to from %d to %d with shader %s.", regionIndex, region.start, region.end, SHADERS[region.shaderIndex]->name);
-
-					Strip_Buffer_SetAll(COLOUR_OFF);
 				}
 			}
 		}

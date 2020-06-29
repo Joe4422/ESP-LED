@@ -14,41 +14,94 @@ void func_shader_ping(const region_t * region);
 void func_shader_rainbow(const region_t * region);
 void func_shader_rainbow2(const region_t * region);
 
+void func_init_null(const region_t * region);
+void func_init_clear(const region_t * region);
+
 /****************************************************************
  * Defines, consts
  ****************************************************************/
 const shader_t shader_default =
 {
+	func_init_null,
 	func_shader_default,
 	"default"
 };
 
 const shader_t shader_ping =
 {
+	func_init_clear,
 	func_shader_ping,
 	"ping"
 };
 
 const shader_t shader_rainbow =
 {
+	func_init_clear,
 	func_shader_rainbow,
 	"rainbow"
 };
 
 const shader_t shader_rainbow2 =
 {
+	func_init_clear,
 	func_shader_rainbow2,
 	"rainbow2"
 };
 
 const shader_t * SHADERS[] = { &shader_default, &shader_ping, &shader_rainbow, &shader_rainbow2 };
 
+#define SHADER_DEFAULT_DELTA_PARAM	32
+
 /****************************************************************
  * Function definitions
  ****************************************************************/
+void func_init_null(const region_t * region) { }
+
+void func_init_clear(const region_t * region)
+{
+	Strip_Buffer_SetArea(region->start, region->end, COLOUR_OFF);
+}
+
 void func_shader_default(const region_t * region)
 {
-	Strip_Buffer_SetArea(region->start, region->end, region->colour);
+	colour_t currentColour = Strip_Buffer_GetOne(region->start);
+	if (currentColour.red < region->colour.red)
+	{
+		uint8_t delta = (region->colour.red - currentColour.red) / SHADER_DEFAULT_DELTA_PARAM;
+		if (delta == 0) delta = 1;
+		currentColour.red += delta;
+	}
+	else if (currentColour.red > region->colour.red)
+	{
+		uint8_t delta = (currentColour.red - region->colour.red) / SHADER_DEFAULT_DELTA_PARAM;
+		if (delta == 0) delta = 1;
+		currentColour.red -= delta;
+	}
+	if (currentColour.green < region->colour.green)
+	{
+		uint8_t delta = (region->colour.green - currentColour.green) / SHADER_DEFAULT_DELTA_PARAM;
+		if (delta == 0) delta = 1;
+		currentColour.green += delta;
+	}
+	else if (currentColour.green > region->colour.green)
+	{
+		uint8_t delta = (currentColour.green - region->colour.green) / SHADER_DEFAULT_DELTA_PARAM;
+		if (delta == 0) delta = 1;
+		currentColour.green -= delta;
+	}
+	if (currentColour.blue < region->colour.blue)
+	{
+		uint8_t delta = (region->colour.blue - currentColour.blue) / SHADER_DEFAULT_DELTA_PARAM;
+		if (delta == 0) delta = 1;
+		currentColour.blue += delta;
+	}
+	else if (currentColour.blue > region->colour.blue)
+	{
+		uint8_t delta = (currentColour.blue - region->colour.blue) / SHADER_DEFAULT_DELTA_PARAM;
+		if (delta == 0) delta = 1;
+		currentColour.blue -= delta;
+	}
+	Strip_Buffer_SetArea(region->start, region->end, currentColour);
 }
 
 void func_shader_ping(const region_t * region)

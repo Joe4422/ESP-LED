@@ -1,14 +1,26 @@
+:root {
+	--color-text: rgb(255,255,255);
+	--color-page-header: rgb(32,113,154);
+	--color-page-background: rgb(45,45,45);
+	--color-sidebar-background: rgb(80,80,80);
+	--color-button-outline: rgb(120,120,120);
+	--color-button-background: rgb(80,80,80);
+	--color-item-header: rgb(80,80,80);
+	--color-item-background: rgb(53,53,53);
+	--color-input: rgb(32,33,36);
+}
+
 body {
-	background-color: rgb(45,45,45);
+	color: var(--color-text);
+	background: var(--color-page-background);
 	font-family: sans-serif;
-	color: rgb(255,255,255);
 	margin: 0px;
 }
 
 input[type="text"] {
-	background-color: rgb(32,33,36);
+	color: var(--color-text);
+	background: var(--color-input);
 	border: none;
-	color: rgb(255,255,255);
 	border-radius: 100px;
 	padding: 3px;
 	padding-left: 5px;
@@ -17,8 +29,8 @@ input[type="text"] {
 }
 
 select {
-	background: rgb(32,33,36);
-	color: rgb(255,255,255);
+	color: var(--color-text);
+	background: var(--color-input);
 	border: none;
 	padding: 3px;
 	border-radius: 100px;
@@ -26,41 +38,42 @@ select {
 }
 
 .tab.bar {
+	background: var(--color-page-header);
 	padding-left: 10px;
 	height: 50px;
-	background: rgb(80,80,80);
+	box-shadow: 0px 0px 5px 3px rgba(0,0,0,0.75);
 }
 
 .tab.button {
-	background: rgb(80,80,80);
+	color: var(--color-text);
+	background: rgba(255,255,255,0);
 	border: none;
-	color: rgb(255,255,255);
 	font-family: sans-serif;
 	font-size: 18px;
 	margin: 0px;
 	height: 50px;
 }
 
+.tab.button.active {
+	background: rgba(255,255,255,0.25);
+}
+
 .tab.content_button {
+	color: var(--color-text);
+	background: var(--color-button-background);
+	border: 2px solid var(--color-button-outline);
 	height: 30px;
-	border: 2px solid rgb(120,120,120);
-	background: rgb(80,80,80);
 	border-radius: 100px;
 	margin-top: 20px;
 	margin-left:20px;
 	margin-bottom: 5px;
 	font-size: 15px;
-	color: rgb(255,255,255);
 	padding-left: 10px;
 	padding-right: 10px;
 }
 
-.tab.button.active {
-	background: rgb(120,120,120);
-}
-
 .region.table {
-	background: linear-gradient(0deg, rgb(53,53,53) 83%, rgb(80,80,80) 83%);
+	background: linear-gradient(0deg, var(--color-item-background) 83%, var(--color-item-header) 83%);
 	margin: 20px;
 	margin-left: 10px;
 	padding: 5px;
@@ -74,48 +87,25 @@ select {
 	vertical-align: top;
 }
 .region.delete_button {
-	background-color: rgb(32,33,36);
+	color: var(--color-text);
+	background: var(--color-button-background);
+	border: 2px solid var(--color-button-outline);
 	width: 25px;
 	height: 25px;
 	border-radius: 100px;
-	border: none;
-	color: rgb(255,255,255);
+	text-align: center;
 }
 .region.slider {
 	-webkit-appearance: none;
 	border-radius: 100px;
 	width: 98%;
-	height: 
 }
 .region.slider.red {
-	background: linear-gradient(to right, rgb(0,0,0) , rgb(255,0,0) );
+	background: linear-gradient(to right, rgb(0,0,0), rgb(255,0,0) );
 }
 .region.slider.green {
-	background: linear-gradient(to right, rgb(0,0,0) , rgb(0,255,0) );
+	background: linear-gradient(to right, rgb(0,0,0), rgb(0,255,0) );
 }
 .region.slider.blue {
-	background: linear-gradient(to right, rgb(0,0,0) , rgb(0,0,255) );
-}
-
-.anchor.table {
-	background: linear-gradient(0deg, rgb(53,53,53) 63%, rgb(80,80,80) 63%);
-	margin: 20px;
-	margin-left: 10px;
-	padding: 5px;
-	border-radius: 5px;
-	box-shadow: 0px 0px 22px 0px rgba(0,0,0,0.5);
-	max-width: 500px;
-	width: 95%;
-}
-.anchor.header {
-	height: 40px;
-	vertical-align: top;
-}
-.anchor.delete_button {
-	background-color: rgb(32,33,36);
-	width: 25px;
-	height: 25px;
-	border-radius: 100px;
-	border: none;
-	color: rgb(255,255,255);
+	background: linear-gradient(to right, rgb(0,0,0), rgb(0,0,255) );
 }

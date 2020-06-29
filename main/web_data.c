@@ -251,134 +251,6 @@ const char* WEB_CLASSES_JS = "class RegionController \n \
  \n \
 		regionControllers.splice(regionControllers.indexOf(this), 1); \n \
 	} \n \
-} \n \
- \n \
-class AnchorController \n \
-{ \n \
-	constructor(anchorIndex, name, index) \n \
-	{ \n \
-		this.anchor = anchorIndex; \n \
-		 \n \
-		this.div = document.createElement(\"div\"); \n \
-		this.div.setAttribute(\"class\", \"anchor\"); \n \
-		this.div.anchorController = this; \n \
-		 \n \
-		var table = document.createElement(\"table\"); \n \
-		table.setAttribute(\"class\", \"anchor table\"); \n \
-		 \n \
-		// button_Delete \n \
-		this.button_Delete = document.createElement(\"button\"); \n \
-		this.button_Delete.innerHTML = \"X\"; \n \
-		this.button_Delete.onclick = this.Delete; \n \
-		this.button_Delete.setAttribute(\"class\", \"anchor delete_button\"); \n \
- \n \
-		// header \n \
-		var tr_header = document.createElement(\"tr\"); \n \
-		tr_header.setAttribute(\"class\", \"anchor header\"); \n \
-		this.td_label_header = document.createElement(\"td\"); \n \
-		this.td_label_header.innerHTML = \"Anchor \" + anchorIndex; \n \
-		this.td_label_header.style=\"font-weight:bold; padding-top: 5px;\"; \n \
-		var td_header_delete_button = document.createElement(\"td\"); \n \
-		td_header_delete_button.style = \"text-align:right;\"; \n \
-		td_header_delete_button.appendChild(this.button_Delete); \n \
-		tr_header.appendChild(this.td_label_header); \n \
-		tr_header.appendChild(td_header_delete_button); \n \
-		table.appendChild(tr_header); \n \
-		 \n \
-		// textBox_Name \n \
-		var tr_textBox_Name = document.createElement(\"tr\"); \n \
-		var td_label_textBox_Name = document.createElement(\"td\"); \n \
-		td_label_textBox_Name.innerHTML = \"Name\"; \n \
-		var td_textBox_Name = document.createElement(\"td\"); \n \
-		this.textBox_Name = document.createElement(\"input\"); \n \
-		this.textBox_Name.setAttribute(\"type\", \"text\"); \n \
-		this.textBox_Name.value = name; \n \
-		this.textBox_Name.onchange = this.Update; \n \
-		td_textBox_Name.appendChild(this.textBox_Name); \n \
-		tr_textBox_Name.appendChild(td_label_textBox_Name); \n \
-		tr_textBox_Name.appendChild(td_textBox_Name); \n \
-		table.appendChild(tr_textBox_Name); \n \
-		 \n \
-		// dropdown_Index \n \
-		var tr_dropdown_Index = document.createElement(\"tr\"); \n \
-		var td_label_dropdown_Index = document.createElement(\"td\"); \n \
-		td_label_dropdown_Index.innerHTML = \"Index\"; \n \
-		var td_dropdown_Index = document.createElement(\"td\"); \n \
-		this.dropdown_Index = document.createElement(\"select\"); \n \
-		for (i = 0; i < num_leds; i++) \n \
-		{ \n \
-			var index_option = document.createElement(\"option\"); \n \
-			index_option.innerHTML = i; \n \
-			this.dropdown_Index.appendChild(index_option); \n \
-		} \n \
-		this.dropdown_Index.selectedIndex = index; \n \
-		this.dropdown_Index.onchange = this.Update; \n \
-		td_dropdown_Index.appendChild(this.dropdown_Index); \n \
-		tr_dropdown_Index.appendChild(td_label_dropdown_Index); \n \
-		tr_dropdown_Index.appendChild(td_dropdown_Index); \n \
-		table.appendChild(tr_dropdown_Index); \n \
-		 \n \
-		this.div.appendChild(table); \n \
-	} \n \
-	 \n \
-	get anchorIndex() \n \
-	{ \n \
-		return this.anchor; \n \
-	} \n \
-	 \n \
-	set anchorIndex(value) \n \
-	{ \n \
-		this.anchor = value; \n \
-		this.td_label_header.innerHTML = \"Anchor \" + value; \n \
-	} \n \
-	 \n \
-	get name() \n \
-	{ \n \
-		return this.textBox_Name.value; \n \
-	} \n \
-	 \n \
-	set name(value) \n \
-	{ \n \
-		this.textBox_Name.value = value; \n \
-	} \n \
-	 \n \
-	get index() \n \
-	{ \n \
-		return this.dropdown_Index.selectedIndex; \n \
-	} \n \
-	 \n \
-	set index(value) \n \
-	{ \n \
-		this.dropdown_Index.selectedIndex = value; \n \
-	} \n \
-	 \n \
-	Create() \n \
-	{ \n \
-		Http_MakeRequest(\"/api?anchor-create:\" + this.name + \",\" + this.index); \n \
-	} \n \
-	 \n \
-	Update() \n \
-	{ \n \
-		var ac = this.parentNode.parentNode.parentNode.parentNode.anchorController; \n \
-		Http_MakeRequest(\"/api?anchor-update:\" + ac.anchorIndex + \",\" + ac.name + \",\" + ac.index); \n \
-	} \n \
-	 \n \
-	Delete() \n \
-	{ \n \
-		var ac = this.parentNode.parentNode.parentNode.parentNode.anchorController; \n \
-		Http_MakeRequest(\"/api?anchor-delete:\" + ac.anchorIndex); \n \
-		 \n \
-		tab_anchors.removeChild(ac.div); \n \
-		 \n \
-		anchorControllers.splice(anchorControllers.indexOf(ac), 1); \n \
-	} \n \
-	 \n \
-	Remove() \n \
-	{		 \n \
-		tab_anchors.removeChild(this.div); \n \
- \n \
-		anchorControllers.splice(anchorControllers.indexOf(this), 1); \n \
-	} \n \
 } \n";
 
 const char* WEB_INDEX_HTML = "<!DOCTYPE html> \n \
@@ -398,19 +270,18 @@ const char* WEB_INDEX_HTML = "<!DOCTYPE html> \n \
 			<button class=\"tab button\" id=\"tab_button_regions\" onclick=\"TabControls_Button_OnClick(this, 'tab_regions')\">Regions</button> \n \
 			<button class=\"tab button\" id=\"tab_button_anchors\" onclick=\"TabControls_Button_OnClick(this, 'tab_anchors')\">Anchors</button> \n \
 		</div> \n \
-		<div class=\"tab container\"> \n \
+		<div id=\"tab_container\" class=\"tab container\"> \n \
 			<div class=\"tab content\" id=\"tab_controls\"> \n \
-				<button id=\"controls_button_toggle_power\" class=\"tab content_button\" onclick=\"Controls_Toggle_Power_OnClick()\">Toggle Power</button> \n \
+				<div> \n \
+					<button id=\"controls_button_toggle_power\" class=\"tab content_button\" onclick=\"Controls_Toggle_Power_OnClick()\">Toggle Power</button> \n \
+				</div> \n \
 			</div> \n \
 			<div class=\"tab content\" id=\"tab_regions\"> \n \
-				<button id=\"regions_button_refresh\" class=\"tab content_button\" onclick=\"Regions_Refresh_OnClick()\">Refresh</button> \n \
-				<button id=\"regions_button_add\" class=\"tab content_button\" onclick=\"Regions_Add_OnClick()\">Add</button> \n \
-				<button id=\"regions_button_clear\" class=\"tab content_button\" onclick=\"Regions_Clear_OnClick()\">Clear</button> \n \
-			</div> \n \
-			<div class=\"tab content\" id=\"tab_anchors\"> \n \
-				<button id=\"anchors_button_refresh\" class=\"tab content_button\" onclick=\"Anchors_Refresh_OnClick()\">Refresh</button> \n \
-				<button id=\"anchors_button_add\" class=\"tab content_button\" onclick=\"Anchors_Add_OnClick()\">Add</button> \n \
-				<button id=\"anchors_button_clear\" class=\"tab content_button\" onclick=\"Anchors_Clear_OnClick()\">Clear</button> \n \
+				<div> \n \
+					<button id=\"regions_button_refresh\" class=\"tab content_button\" onclick=\"Regions_Refresh_OnClick()\">Refresh</button> \n \
+					<button id=\"regions_button_add\" class=\"tab content_button\" onclick=\"Regions_Add_OnClick()\">Add</button> \n \
+					<button id=\"regions_button_clear\" class=\"tab content_button\" onclick=\"Regions_Clear_OnClick()\">Clear</button> \n \
+				</div> \n \
 			</div> \n \
 		</div> \n \
 		<script>Page_OnLoad();</script> \n \
@@ -440,15 +311,12 @@ var anchor_load_progress = 0; \n \
 function Page_OnLoad() \n \
 { \n \
 	tab_control_regions = document.getElementById(\"tab_control_regions\"); \n \
-	tab_control_anchors = document.getElementById(\"tab_control_anchors\"); \n \
 	 \n \
 	tab_regions = document.getElementById(\"tab_regions\"); \n \
-	tab_anchors = document.getElementById(\"tab_anchors\"); \n \
 	 \n \
 	Http_MakeRequest(\"/api?shader-get_names\"); \n \
 	Http_MakeRequest(\"/api?config-num_leds\"); \n \
 	Http_MakeRequest(\"/api?region-get_max\"); \n \
-	Http_MakeRequest(\"/api?anchor-get_max\"); \n \
 	 \n \
 	document.getElementById(\"tab_button_controls\").click(); \n \
 } \n \
@@ -533,54 +401,6 @@ function Http_Response_Config(response) \n \
 	} \n \
 } \n \
  \n \
-function Http_Response_Anchor(response) \n \
-{ \n \
-	switch (response[1]) \n \
-	{ \n \
-		case \"get_max\": \n \
-			max_anchors = response[2]; \n \
-			anchor_load_progress = 0; \n \
-			 \n \
-			Http_MakeRequest(\"api?anchor-get:0\"); \n \
-			break; \n \
-		case \"get\": \n \
-			anchor_load_progress++; \n \
-			if (anchor_load_progress == max_anchors) \n \
-			{ \n \
-				document.getElementById(\"anchors_button_refresh\").style = \"\"; \n \
-			} \n \
-			else \n \
-			{ \n \
-				var prog = (anchor_load_progress / max_anchors) * 100; \n \
-				document.getElementById(\"anchors_button_refresh\").style = \"background: linear-gradient(90deg, rgb(90,130,150) \" + prog + \"%, rgb(80,80,80) \" + prog + \"%);\"; \n \
-				if (response[2] != \"null\") \n \
-				{ \n \
-					var ac = new AnchorController(response[2], response[3], response[4]); \n \
-					anchorControllers.push(ac); \n \
-					tab_anchors.appendChild(ac.div); \n \
-					ac.div.id = \"anchor-\" + response[2]; \n \
-				} \n \
-				Http_MakeRequest(\"api?anchor-get:\" + anchor_load_progress); \n \
-			} \n \
-			break; \n \
-		case \"create\": \n \
-			for (i = 0; i < anchorControllers.length; i++) \n \
-			{ \n \
-				if (anchorControllers[i].anchorIndex === null) \n \
-				{ \n \
-					console.log(\"Updated anchor index of anchor controller \" + i + \" to \" + response[2]);  \n \
-					anchorControllers[i].anchorIndex = response[2]; \n \
-					anchorControllers[i].div.id = \"anchor-\" + response[2]; \n \
-					tab_anchors.appendChild(anchorControllers[i].div); \n \
-					document.getElementById(\"anchors_button_add\").disabled = false; \n \
-				} \n \
-			} \n \
-			break; \n \
-		default: \n \
-			break; \n \
-	} \n \
-} \n \
-  \n \
 function Http_RequestEventListener() \n \
 { \n \
 	response = this.responseText.split(\" \"); \n \
@@ -596,9 +416,6 @@ function Http_RequestEventListener() \n \
 			break; \n \
 		case \"config\": \n \
 			Http_Response_Config(response); \n \
-			break; \n \
-		case \"anchor\": \n \
-			Http_Response_Anchor(response); \n \
 			break; \n \
 		default: \n \
 			break; \n \
@@ -684,58 +501,31 @@ function Regions_Clear_OnClick() \n \
 	} \n \
 	 \n \
 	Http_MakeRequest(\"/api?region-clear\"); \n \
-} \n \
- \n \
-/**************************************************************** \n \
- * Anchors \n \
- ****************************************************************/ \n \
-function Anchors_Add_OnClick() \n \
-{ \n \
-	if (anchorControllers.length < max_anchors) \n \
-	{ \n \
-		var ac = new AnchorController(null, \"-\", 0); \n \
-		 \n \
-		ac.Create(); \n \
-		 \n \
-		anchorControllers.push(ac); \n \
-		 \n \
-		document.getElementById(\"anchors_button_add\").disabled = true; \n \
-	} \n \
-} \n \
- \n \
-function Anchors_Refresh_OnClick() \n \
-{ \n \
-	var len = anchorControllers.length; \n \
-	for (i = 0; i < len; i++) \n \
-	{ \n \
-		anchorControllers[0].Remove(); \n \
-	} \n \
-	 \n \
-	Http_MakeRequest(\"/api?anchor-get_max\"); \n \
-} \n \
- \n \
-function Anchors_Clear_OnClick() \n \
-{ \n \
-	var len = anchorControllers.length; \n \
-	for (i = 0; i < len; i++) \n \
-	{ \n \
-		anchorControllers[0].Remove(); \n \
-	} \n \
-	 \n \
-	Http_MakeRequest(\"/api?anchor-clear\"); \n \
 } \n";
 
-const char* WEB_STYLE_CSS = "body { \n \
-	background-color: rgb(45,45,45); \n \
+const char* WEB_STYLE_CSS = ":root { \n \
+	--color-text: rgb(255,255,255); \n \
+	--color-page-header: rgb(32,113,154); \n \
+	--color-page-background: rgb(45,45,45); \n \
+	--color-sidebar-background: rgb(80,80,80); \n \
+	--color-button-outline: rgb(120,120,120); \n \
+	--color-button-background: rgb(80,80,80); \n \
+	--color-item-header: rgb(80,80,80); \n \
+	--color-item-background: rgb(53,53,53); \n \
+	--color-input: rgb(32,33,36); \n \
+} \n \
+ \n \
+body { \n \
+	color: var(--color-text); \n \
+	background: var(--color-page-background); \n \
 	font-family: sans-serif; \n \
-	color: rgb(255,255,255); \n \
 	margin: 0px; \n \
 } \n \
  \n \
 input[type=\"text\"] { \n \
-	background-color: rgb(32,33,36); \n \
+	color: var(--color-text); \n \
+	background: var(--color-input); \n \
 	border: none; \n \
-	color: rgb(255,255,255); \n \
 	border-radius: 100px; \n \
 	padding: 3px; \n \
 	padding-left: 5px; \n \
@@ -744,8 +534,8 @@ input[type=\"text\"] { \n \
 } \n \
  \n \
 select { \n \
-	background: rgb(32,33,36); \n \
-	color: rgb(255,255,255); \n \
+	color: var(--color-text); \n \
+	background: var(--color-input); \n \
 	border: none; \n \
 	padding: 3px; \n \
 	border-radius: 100px; \n \
@@ -753,41 +543,42 @@ select { \n \
 } \n \
  \n \
 .tab.bar { \n \
+	background: var(--color-page-header); \n \
 	padding-left: 10px; \n \
 	height: 50px; \n \
-	background: rgb(80,80,80); \n \
+	box-shadow: 0px 0px 5px 3px rgba(0,0,0,0.75); \n \
 } \n \
  \n \
 .tab.button { \n \
-	background: rgb(80,80,80); \n \
+	color: var(--color-text); \n \
+	background: rgba(255,255,255,0); \n \
 	border: none; \n \
-	color: rgb(255,255,255); \n \
 	font-family: sans-serif; \n \
 	font-size: 18px; \n \
 	margin: 0px; \n \
 	height: 50px; \n \
 } \n \
  \n \
+.tab.button.active { \n \
+	background: rgba(255,255,255,0.25); \n \
+} \n \
+ \n \
 .tab.content_button { \n \
+	color: var(--color-text); \n \
+	background: var(--color-button-background); \n \
+	border: 2px solid var(--color-button-outline); \n \
 	height: 30px; \n \
-	border: 2px solid rgb(120,120,120); \n \
-	background: rgb(80,80,80); \n \
 	border-radius: 100px; \n \
 	margin-top: 20px; \n \
 	margin-left:20px; \n \
 	margin-bottom: 5px; \n \
 	font-size: 15px; \n \
-	color: rgb(255,255,255); \n \
 	padding-left: 10px; \n \
 	padding-right: 10px; \n \
 } \n \
  \n \
-.tab.button.active { \n \
-	background: rgb(120,120,120); \n \
-} \n \
- \n \
 .region.table { \n \
-	background: linear-gradient(0deg, rgb(53,53,53) 83%, rgb(80,80,80) 83%); \n \
+	background: linear-gradient(0deg, var(--color-item-background) 83%, var(--color-item-header) 83%); \n \
 	margin: 20px; \n \
 	margin-left: 10px; \n \
 	padding: 5px; \n \
@@ -801,50 +592,27 @@ select { \n \
 	vertical-align: top; \n \
 } \n \
 .region.delete_button { \n \
-	background-color: rgb(32,33,36); \n \
+	color: var(--color-text); \n \
+	background: var(--color-button-background); \n \
+	border: 2px solid var(--color-button-outline); \n \
 	width: 25px; \n \
 	height: 25px; \n \
 	border-radius: 100px; \n \
-	border: none; \n \
-	color: rgb(255,255,255); \n \
+	text-align: center; \n \
 } \n \
 .region.slider { \n \
 	-webkit-appearance: none; \n \
 	border-radius: 100px; \n \
 	width: 98%; \n \
-	height:  \n \
 } \n \
 .region.slider.red { \n \
-	background: linear-gradient(to right, rgb(0,0,0) , rgb(255,0,0) ); \n \
+	background: linear-gradient(to right, rgb(0,0,0), rgb(255,0,0) ); \n \
 } \n \
 .region.slider.green { \n \
-	background: linear-gradient(to right, rgb(0,0,0) , rgb(0,255,0) ); \n \
+	background: linear-gradient(to right, rgb(0,0,0), rgb(0,255,0) ); \n \
 } \n \
 .region.slider.blue { \n \
-	background: linear-gradient(to right, rgb(0,0,0) , rgb(0,0,255) ); \n \
-} \n \
- \n \
-.anchor.table { \n \
-	background: linear-gradient(0deg, rgb(53,53,53) 63%, rgb(80,80,80) 63%); \n \
-	margin: 20px; \n \
-	margin-left: 10px; \n \
-	padding: 5px; \n \
-	border-radius: 5px; \n \
-	box-shadow: 0px 0px 22px 0px rgba(0,0,0,0.5); \n \
-	max-width: 500px; \n \
-	width: 95%; \n \
-} \n \
-.anchor.header { \n \
-	height: 40px; \n \
-	vertical-align: top; \n \
-} \n \
-.anchor.delete_button { \n \
-	background-color: rgb(32,33,36); \n \
-	width: 25px; \n \
-	height: 25px; \n \
-	border-radius: 100px; \n \
-	border: none; \n \
-	color: rgb(255,255,255); \n \
+	background: linear-gradient(to right, rgb(0,0,0), rgb(0,0,255) ); \n \
 } \n";
 
 /****************************************************************

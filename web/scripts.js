@@ -21,15 +21,12 @@ var anchor_load_progress = 0;
 function Page_OnLoad()
 {
 	tab_control_regions = document.getElementById("tab_control_regions");
-	tab_control_anchors = document.getElementById("tab_control_anchors");
 	
 	tab_regions = document.getElementById("tab_regions");
-	tab_anchors = document.getElementById("tab_anchors");
 	
 	Http_MakeRequest("/api?shader-get_names");
 	Http_MakeRequest("/api?config-num_leds");
 	Http_MakeRequest("/api?region-get_max");
-	Http_MakeRequest("/api?anchor-get_max");
 	
 	document.getElementById("tab_button_controls").click();
 }
@@ -114,54 +111,6 @@ function Http_Response_Config(response)
 	}
 }
 
-function Http_Response_Anchor(response)
-{
-	switch (response[1])
-	{
-		case "get_max":
-			max_anchors = response[2];
-			anchor_load_progress = 0;
-			
-			Http_MakeRequest("api?anchor-get:0");
-			break;
-		case "get":
-			anchor_load_progress++;
-			if (anchor_load_progress == max_anchors)
-			{
-				document.getElementById("anchors_button_refresh").style = "";
-			}
-			else
-			{
-				var prog = (anchor_load_progress / max_anchors) * 100;
-				document.getElementById("anchors_button_refresh").style = "background: linear-gradient(90deg, rgb(90,130,150) " + prog + "%, rgb(80,80,80) " + prog + "%);";
-				if (response[2] != "null")
-				{
-					var ac = new AnchorController(response[2], response[3], response[4]);
-					anchorControllers.push(ac);
-					tab_anchors.appendChild(ac.div);
-					ac.div.id = "anchor-" + response[2];
-				}
-				Http_MakeRequest("api?anchor-get:" + anchor_load_progress);
-			}
-			break;
-		case "create":
-			for (i = 0; i < anchorControllers.length; i++)
-			{
-				if (anchorControllers[i].anchorIndex === null)
-				{
-					console.log("Updated anchor index of anchor controller " + i + " to " + response[2]); 
-					anchorControllers[i].anchorIndex = response[2];
-					anchorControllers[i].div.id = "anchor-" + response[2];
-					tab_anchors.appendChild(anchorControllers[i].div);
-					document.getElementById("anchors_button_add").disabled = false;
-				}
-			}
-			break;
-		default:
-			break;
-	}
-}
- 
 function Http_RequestEventListener()
 {
 	response = this.responseText.split(" ");
@@ -177,9 +126,6 @@ function Http_RequestEventListener()
 			break;
 		case "config":
 			Http_Response_Config(response);
-			break;
-		case "anchor":
-			Http_Response_Anchor(response);
 			break;
 		default:
 			break;
@@ -265,43 +211,4 @@ function Regions_Clear_OnClick()
 	}
 	
 	Http_MakeRequest("/api?region-clear");
-}
-
-/****************************************************************
- * Anchors
- ****************************************************************/
-function Anchors_Add_OnClick()
-{
-	if (anchorControllers.length < max_anchors)
-	{
-		var ac = new AnchorController(null, "-", 0);
-		
-		ac.Create();
-		
-		anchorControllers.push(ac);
-		
-		document.getElementById("anchors_button_add").disabled = true;
-	}
-}
-
-function Anchors_Refresh_OnClick()
-{
-	var len = anchorControllers.length;
-	for (i = 0; i < len; i++)
-	{
-		anchorControllers[0].Remove();
-	}
-	
-	Http_MakeRequest("/api?anchor-get_max");
-}
-
-function Anchors_Clear_OnClick()
-{
-	var len = anchorControllers.length;
-	for (i = 0; i < len; i++)
-	{
-		anchorControllers[0].Remove();
-	}
-	
-	Http_MakeRequest("/api?anchor-clear");
 }

@@ -13,21 +13,19 @@
 		<div class="tab bar">
 			<button class="tab button" id="tab_button_controls" onclick="TabControls_Button_OnClick(this, 'tab_controls')">Controls</button>
 			<button class="tab button" id="tab_button_regions" onclick="TabControls_Button_OnClick(this, 'tab_regions')">Regions</button>
-			<button class="tab button" id="tab_button_anchors" onclick="TabControls_Button_OnClick(this, 'tab_anchors')">Anchors</button>
 		</div>
-		<div class="tab container">
+		<div id="tab_container" class="tab container">
 			<div class="tab content" id="tab_controls">
-				<button id="controls_button_toggle_power" class="tab content_button" onclick="Controls_Toggle_Power_OnClick()">Toggle Power</button>
+				<div>
+					<button id="controls_button_toggle_power" class="tab content_button" onclick="Controls_Toggle_Power_OnClick()">Toggle Power</button>
+				</div>
 			</div>
 			<div class="tab content" id="tab_regions">
-				<button id="regions_button_refresh" class="tab content_button" onclick="Regions_Refresh_OnClick()">Refresh</button>
-				<button id="regions_button_add" class="tab content_button" onclick="Regions_Add_OnClick()">Add</button>
-				<button id="regions_button_clear" class="tab content_button" onclick="Regions_Clear_OnClick()">Clear</button>
-			</div>
-			<div class="tab content" id="tab_anchors">
-				<button id="anchors_button_refresh" class="tab content_button" onclick="Anchors_Refresh_OnClick()">Refresh</button>
-				<button id="anchors_button_add" class="tab content_button" onclick="Anchors_Add_OnClick()">Add</button>
-				<button id="anchors_button_clear" class="tab content_button" onclick="Anchors_Clear_OnClick()">Clear</button>
+				<div>
+					<button id="regions_button_refresh" class="tab content_button" onclick="Regions_Refresh_OnClick()">Refresh</button>
+					<button id="regions_button_add" class="tab content_button" onclick="Regions_Add_OnClick()">Add</button>
+					<button id="regions_button_clear" class="tab content_button" onclick="Regions_Clear_OnClick()">Clear</button>
+				</div>
 			</div>
 		</div>
 		<script>Page_OnLoad();</script>
